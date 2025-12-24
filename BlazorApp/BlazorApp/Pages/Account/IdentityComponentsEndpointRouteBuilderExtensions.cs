@@ -15,12 +15,14 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal static class IdentityComponentsEndpointRouteBuilderExtensions
     {
-        // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
+        // Эти конечные точки требуются компонентам Identity Razor, определенным в каталоге /Pages/Account/Pages этого проекта.
         public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
         {
             ArgumentNullException.ThrowIfNull(endpoints);
 
-            var accountGroup = endpoints.MapGroup("/Account");
+            var accountGroup = endpoints.MapGroup("/Account")
+                // скрыть методы из OpenAPI
+                .ExcludeFromDescription();
 
             accountGroup.MapPost("/PerformExternalLogin", (
                 HttpContext context,

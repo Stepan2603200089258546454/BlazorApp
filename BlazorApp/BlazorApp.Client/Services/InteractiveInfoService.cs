@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BlazorApp.Common.Services
+namespace BlazorApp.Client.Services
 {
     /// <summary>
     /// Класс который позволяет узнать где и как выполняется компонент

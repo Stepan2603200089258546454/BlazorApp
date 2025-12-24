@@ -2,9 +2,9 @@
   <Folder Name="/Элементы решения/">
     <File Path="README.md" />
   </Folder>
-  <Project Path="BlazorApp.Common/BlazorApp.Common.csproj" Id="2b82da67-0f9c-4ab8-bdec-d2aa0bfd5c33" />
   <Project Path="BlazorApp/BlazorApp.Client/BlazorApp.Client.csproj" />
   <Project Path="BlazorApp/BlazorApp/BlazorApp.csproj" />
   <Project Path="DataContext/DataContext.csproj" />
+  <Project Path="FileExstend/FileExstend.csproj" Id="655d4861-1daf-48eb-9cf3-b07f201a9455" />
   <Project Path="TestProject/TestProject.csproj" Id="cc284034-ae9d-40f7-a3f1-1cf82bd16982" />
 </Solution>

@@ -1,17 +1,25 @@
-using BlazorApp.Client.Pages;
+using BlazorApp.API;
+using BlazorApp.Client.Interfaces;
+using BlazorApp.Client.Settings;
+using BlazorApp.Helpers;
 using BlazorApp.Pages;
 using BlazorApp.Pages.Account;
+using BlazorApp.Services;
 using DataContext;
+using DataContext.Configuration;
 using DataContext.Identity;
 using DataContext.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers(); //api
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -23,6 +31,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -36,6 +45,11 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddHttpClient();
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IFileListService, FileListService>();
+builder.Services.Configure<FileUploadSettings>(builder.Configuration.GetSection(nameof(FileUploadSettings)));
+builder.Services.AddScoped<FileHelper>();
 
 var app = builder.Build();
 
@@ -67,17 +81,29 @@ app.MapScalarApiReference(options =>
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UseRouting(); //mvc
+app.UseAuthorization(); //mvc + api
+
 app.UseAntiforgery();
 
+app.UseStaticFiles();
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorApp.Client._Imports).Assembly);
 
+app.MapControllers(); //api
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets(); //mvc
+
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+app.UsingAPIEndpoints();
 // Миграции EF Core
 app.AutoMigrate();
 

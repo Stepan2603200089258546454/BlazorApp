@@ -82,6 +82,7 @@
   <ItemGroup>
     <Folder Include="Exstension\" />
     <Folder Include="Abstractions\" />
+    <Folder Include="Repositories\" />
   </ItemGroup>
 
 </Project>

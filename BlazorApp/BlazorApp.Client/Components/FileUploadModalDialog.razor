@@ -139,6 +139,7 @@
         isLoading = true;
         await service.SendFilesAsync(PageLifetimeToken);
         isLoading = false;
+        StateHasChanged();
         await OnSendFiles.InvokeAsync();
     }
 

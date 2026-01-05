@@ -1,11 +1,14 @@
 ﻿using BlazorApp.Client.Models;
+using BlazorApp.Client.Models.Request;
 using BlazorApp.Client.Settings;
 using BlazorApp.Helpers;
+using BlazorApp.Models.Request;
 using DataContext.Models;
 using FileExstend;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Routing;
 using System.Collections.Generic;
 
 namespace BlazorApp.API
@@ -16,12 +19,21 @@ namespace BlazorApp.API
         {
             ArgumentNullException.ThrowIfNull(endpoints);
 
-            endpoints.MapPost("/File/Upload", Upload)
+            endpoints.MapPost(Files.API.Upload, PostUpload)
+                .RequireAuthorization()
                 .DisableAntiforgery();
-            endpoints.MapGet("/File/GetSettings", GetSettings);
-            endpoints.MapGet("/File/GetFiles", GetFiles);
-            endpoints.MapPost("/File/Download", Download);
-            endpoints.MapPost("/File/Delete", Delete)
+            
+            endpoints.MapGet(Files.API.GetSettings, GetSettings)
+                .RequireAuthorization();
+            
+            endpoints.MapPost(Files.API.GetFiles, GetFiles)
+                .RequireAuthorization();
+            
+            endpoints.MapPost(Files.API.Download, PostDownload)
+                .RequireAuthorization();
+            
+            endpoints.MapPost(Files.API.Delete, PostDelete)
+                .RequireAuthorization()
                 .DisableAntiforgery();
 
             return endpoints;
@@ -29,36 +41,36 @@ namespace BlazorApp.API
 
         private static async Task<IResult> GetSettings(IOptionsMonitor<FileUploadSettings> options)
         {
-            return TypedResults.Ok(options.CurrentValue);
+            return TypedResults.Ok<FileUploadSettings>(options.CurrentValue);
         }
-        private static async Task<IResult> GetFiles([FromServices] FileHelper fileHelper)
+        private static async Task<IResult> GetFiles(FileGetRequest request, [FromServices] FileHelper fileHelper, HttpContext context)
         {
-            return TypedResults.Ok(fileHelper.GetFiles());
+            return TypedResults.Ok<IEnumerable<FileItem>>(await fileHelper.GetFiles(request, context.User));
         }
-        private static async Task<IResult> Upload([FromForm] IFormFileCollection files, HttpContext context, [FromServices] FileHelper fileHelper)
+        private static async Task<IResult> PostUpload([FromForm] FileUploadRequest request, HttpContext context, [FromServices] FileHelper fileHelper)
         {
-            if (files is null || files?.Count() <= 0)
+            if (request.Files is null || request.Files?.Count() <= 0)
                 return TypedResults.BadRequest();
 
-            var saveResult = await fileHelper.SaveFiles(files!);
+            Result<List<FileUploadResult>> saveResult = await fileHelper.SaveFiles(request.Files!, context.User);
 
             return TypedResults.Ok<IEnumerable<FileUploadResult>>(saveResult.Value?.Where(x => x.IsSave == false));
         }
-        private static async Task<IResult> Download([FromForm] string Path, HttpContext context, [FromServices] FileHelper fileHelper)
+        private static async Task<IResult> PostDownload([FromForm] FileDownloadRequest request, HttpContext context, [FromServices] FileHelper fileHelper)
         {
-            Result<byte[]> result = await fileHelper.DownloadAsync(Path);
+            Result<byte[]> result = await fileHelper.DownloadAsync(request.Path, context.User);
             if (result.Success)
                 return TypedResults.File(
                     fileContents: result.Value!,
-                    contentType: FileExstensionHelper.GetExtensionType(in Path).MIME,
-                    fileDownloadName: FileExstensionHelper.GetFileName(in Path)
+                    contentType: FileExstensionHelper.GetExtensionType(request.Path).MIME,
+                    fileDownloadName: FileExstensionHelper.GetFileName(request.Path)
                     );
             else
                 return TypedResults.BadRequest(result.ErrorMessage);
         }
-        private static async Task<IResult> Delete([FromForm] string Path, HttpContext context, [FromServices] FileHelper fileHelper)
+        private static async Task<IResult> PostDelete([FromForm] FileDeleteRequest request, HttpContext context, [FromServices] FileHelper fileHelper)
         {
-            return TypedResults.Ok(fileHelper.Delete(Path));
+            return TypedResults.Ok<Result>(await fileHelper.Delete(request.Path, context.User));
         }
     }
 }

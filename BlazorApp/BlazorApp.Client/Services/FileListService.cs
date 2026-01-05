@@ -1,7 +1,11 @@
 ﻿using BlazorApp.Client.Interfaces;
 using BlazorApp.Client.Models;
+using BlazorApp.Client.Models.Request;
+using Routing;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BlazorApp.Client.Services
 {
@@ -9,18 +13,22 @@ namespace BlazorApp.Client.Services
     {
         protected readonly HttpClient _client;
         public string ErrorMessage { get; private set; } = string.Empty;
+        public FileGetRequest GetRequest { get; private set; } = new FileGetRequest();
 
         public FileListService(HttpClient client)
         {
             _client = client;
         }
 
-
         public async Task<IEnumerable<FileItem>?> GetFiles(CancellationToken cancellationToken = default)
         {
             try
             {
-                using HttpResponseMessage response = await _client.GetAsync("/File/GetFiles", cancellationToken);
+                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Files.API.GetFiles);
+                request.Content = new StringContent(JsonSerializer.Serialize(GetRequest), Encoding.UTF8, "application/json");
+                
+                using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+                
                 cancellationToken.ThrowIfCancellationRequested();
                 using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
@@ -53,7 +61,7 @@ namespace BlazorApp.Client.Services
                     ["Path"] = filePath
                 });
                 // Создаем HttpRequestMessage
-                var request = new HttpRequestMessage(HttpMethod.Post, "/File/Delete")
+                var request = new HttpRequestMessage(HttpMethod.Post, Files.API.Delete)
                 {
                     Content = content
                 };

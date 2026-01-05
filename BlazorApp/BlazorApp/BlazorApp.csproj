@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DataContext\DataContext.csproj" />
     <ProjectReference Include="..\..\FileExstend\FileExstend.csproj" />
+    <ProjectReference Include="..\..\Routing\Routing.csproj" />
     <ProjectReference Include="..\BlazorApp.Client\BlazorApp.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.1" />
@@ -19,10 +20,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Scalar.AspNetCore" Version="2.11.5" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\Response\" />
     <Folder Include="wwwroot\unsafe_uploads\" />
   </ItemGroup>
 

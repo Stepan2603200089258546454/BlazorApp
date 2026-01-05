@@ -4,6 +4,7 @@ using BlazorApp.Client.Settings;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
+using Routing;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace BlazorApp.Client.Services
         {
             try
             {
-                using HttpResponseMessage response = await _client.GetAsync("/File/GetSettings", cancellationToken);
+                using HttpResponseMessage response = await _client.GetAsync(Files.API.GetSettings, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
@@ -78,7 +79,7 @@ namespace BlazorApp.Client.Services
                 ErrorMessage = $"Произошла ошибка, попробуйте ещё раз";
             }
         }
-        private async Task<IEnumerable<string>?> SendMessage(CancellationToken cancellationToken = default)
+        private async Task<IEnumerable<FileUploadResult>?> SendMessage(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -89,12 +90,11 @@ namespace BlazorApp.Client.Services
                 {
                     try
                     {
-                        StreamContent fileContent = new StreamContent(file.OpenReadStream(Settings.MaxFileSize, cancellationToken));
+                        StreamContent fileContent = new StreamContent(file.OpenReadStream(file.Size, cancellationToken));
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        fileContent.Headers.ContentType =
-                            new MediaTypeHeaderValue("multipart/form-data");
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
 
                         content.Add(
                             content: fileContent,
@@ -114,12 +114,12 @@ namespace BlazorApp.Client.Services
                     ErrorMessage = "Произошла ошибка добавления файлов";
                     return null;
                 }
-                //using var request = new HttpRequestMessage(HttpMethod.Post, "api/FileUpload/Upload");
-                using var request = new HttpRequestMessage(HttpMethod.Post, "/File/Upload");
+
+                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Files.API.Upload);
                 request.SetBrowserRequestStreamingEnabled(true);
                 request.Content = content;
 
-                using var response = await _client.SendAsync(request, cancellationToken);
+                using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 if (response.IsSuccessStatusCode == false)
                 {
@@ -127,9 +127,9 @@ namespace BlazorApp.Client.Services
                     return null;
                 }
 
-                using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-                var result = await JsonSerializer.DeserializeAsync<IEnumerable<string>>(responseStream, new JsonSerializerOptions
+                var result = await JsonSerializer.DeserializeAsync<IEnumerable<FileUploadResult>>(responseStream, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                 }, cancellationToken);
@@ -153,15 +153,12 @@ namespace BlazorApp.Client.Services
             {
                 if (SelectedFiles.Count <= 0) return;
 
-                IEnumerable<string>? result = await SendMessage(cancellationToken);
-
-                if (result?.Count() is null or 0 || cancellationToken.IsCancellationRequested)
-                    return;
+                IEnumerable<FileUploadResult>? result = await SendMessage(cancellationToken);
 
                 SelectedFiles.Clear();
 
                 ErrorFiles.Clear();
-                ErrorFiles.AddRange(result);
+                ErrorFiles.AddRange(result?.Where(x => x.IsSave == false).Select(x => x.Name) ?? Array.Empty<string>());
             }
             catch (Exception ex)
             {

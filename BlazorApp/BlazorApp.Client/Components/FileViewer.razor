@@ -12,18 +12,16 @@
     else if (FileEx.Type == FileType.Video)
     {
         <center>
-            <div class="embed-responsive embed-responsive-16by9">
-                <video controls preload="metadata" style="max-width: 100%; max-height:82vh;">
-                    <source class="embed-responsive-item" src="@FilePath" />
-                </video>
-            </div>
+            <video controls preload="metadata" name="media" style="max-width: 100%; max-height:82vh;">
+                <source src="@FilePath" type="@FileEx.MIME" />
+            </video>
         </center>
     }
     else if (FileEx.Type == FileType.Audio)
     {
         <center>
             <figure>
-                <audio controls src="@FilePath" preload="metadata" style="width: 100%"></audio>
+                <audio controls src="@FilePath" preload="metadata" type="@FileEx.MIME" style="width: 100%"></audio>
             </figure>
         </center>
     }
@@ -34,6 +32,22 @@
             </iframe>
         </center>
     }
+    @* else if (FileEx.Type is FileType.MSWord or FileType.MSExcel or FileType.MSPowerPoint)
+    {
+        <center>
+            @if (NavigationManager.BaseUri.Contains("localhost"))
+            {
+                <div class="alert alert-danger" role="alert">
+                    При локальном сервере не доступен просмотр
+                </div>
+            }
+
+            <a href="@($"https://docs.google.com/viewer?url={Uri.EscapeDataString(NavigationManager.BaseUri + FilePath)}&embedded=true")" target="_blank">
+                Окрыть в GoogleDocs
+            </a>
+            
+        </center>
+    } *@
     else
     {
         <div class="alert alert-danger" role="alert">
@@ -51,6 +65,8 @@ else
 @code {
     [Parameter, EditorRequired]
     public string FilePath { get; set; }
+
+    [Inject] NavigationManager NavigationManager { get; set; }
 
     private FileExstension FileEx;
 

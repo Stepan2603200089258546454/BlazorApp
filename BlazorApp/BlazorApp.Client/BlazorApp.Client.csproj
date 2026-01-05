@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FileExstend\FileExstend.csproj" />
+    <ProjectReference Include="..\..\Routing\Routing.csproj" />
   </ItemGroup>
 
 </Project>

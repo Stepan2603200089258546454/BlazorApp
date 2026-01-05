@@ -2,8 +2,10 @@
 using BlazorApp.Client.Models;
 using BlazorApp.Client.Settings;
 using BlazorApp.Helpers;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace BlazorApp.Services
@@ -12,6 +14,7 @@ namespace BlazorApp.Services
     {
         protected readonly FileHelper _fileHelper;
         protected readonly IOptionsMonitor<FileUploadSettings> _options;
+        protected readonly AuthenticationStateProvider _authStateProvider;
         protected readonly ILogger<FileUploadService> _logger;
 
         public List<IBrowserFile> SelectedFiles { get; private set; } = [];
@@ -19,10 +22,15 @@ namespace BlazorApp.Services
         public string ErrorMessage { get; private set; } = string.Empty;
         public FileUploadSettings Settings => _options.CurrentValue;
 
-        public FileUploadService(FileHelper fileHelper, IOptionsMonitor<FileUploadSettings> options, ILogger<FileUploadService> logger)
+        public FileUploadService(
+            FileHelper fileHelper, 
+            IOptionsMonitor<FileUploadSettings> options,
+            AuthenticationStateProvider authStateProvider,
+            ILogger<FileUploadService> logger)
         {
             _fileHelper = fileHelper;
             _options = options;
+            _authStateProvider = authStateProvider;
             _logger = logger;
         }
 
@@ -51,11 +59,17 @@ namespace BlazorApp.Services
                 ErrorMessage = $"Произошла ошибка, попробуйте ещё раз";
             }
         }
+        private async Task<ClaimsPrincipal> GetUser()
+        {
+            AuthenticationState authState = await _authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            return user;
+        }
         public async Task SendFilesAsync(CancellationToken cancellationToken = default)
         {
             if (SelectedFiles.Count <= 0) return;
 
-            Result<List<FileUploadResult>> result = await _fileHelper.SaveFiles(SelectedFiles);
+            Result<List<FileUploadResult>> result = await _fileHelper.SaveFiles(SelectedFiles, await GetUser());
 
             ErrorFiles.Clear();
             ErrorFiles.AddRange(result.Value?.Where(x => x.IsSave == false).Select(x => x.Name) ?? Array.Empty<string>());

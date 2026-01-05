@@ -6,5 +6,6 @@
   <Project Path="BlazorApp/BlazorApp/BlazorApp.csproj" />
   <Project Path="DataContext/DataContext.csproj" />
   <Project Path="FileExstend/FileExstend.csproj" Id="655d4861-1daf-48eb-9cf3-b07f201a9455" />
+  <Project Path="Routing/Routing.csproj" Id="dd119034-6a01-44a3-84d8-237d75462e69" />
   <Project Path="TestProject/TestProject.csproj" Id="cc284034-ae9d-40f7-a3f1-1cf82bd16982" />
 </Solution>

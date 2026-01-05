@@ -1,7 +1,4 @@
 ﻿@page "/Files"
-@using BlazorApp.Client.Models.Request
-@using FileExstend
-@using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @rendermode pageRenderMode
 @inject IFileListService service
@@ -152,7 +149,7 @@ else
 }
 
 @code {
-    private static IComponentRenderMode pageRenderMode = RenderMode.InteractiveWebAssembly;
+    private static IComponentRenderMode pageRenderMode = RenderMode.InteractiveAuto;
     private InteractiveInfoService InteractiveInfo { get; set; }
 
     private CancellationTokenSource _pageLifetimeCts = new();

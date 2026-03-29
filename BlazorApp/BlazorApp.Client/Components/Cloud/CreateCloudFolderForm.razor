@@ -1,0 +1,16 @@
+﻿@using BlazorApp.Client.Models.Cloud
+
+<div class="mb-3">
+    <label for="Model.DisplayName" class="form-label">Название папки</label>
+    <InputText @bind-Value="Model.DisplayName" type="text" class="form-control" placeholder="Название папки" />
+</div>
+
+<div class="mb-3">
+    <label for="Model.Description" class="form-label">Описание папки</label>
+    <InputText @bind-Value="Model.Description" type="text" class="form-control" id="Model.Description" placeholder="Описание папки" />
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public CreateCloudFolderModel Model { get; set; }
+}

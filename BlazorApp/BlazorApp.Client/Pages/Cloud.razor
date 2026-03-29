@@ -1,0 +1,67 @@
+﻿@page "/Cloud"
+@using BlazorApp.Client.Components.Cloud
+@using BlazorApp.Client.Models.Cloud
+@using BlazorApp.Client.Services.Cloud
+@attribute [Authorize]
+@implements IAsyncDisposable
+@rendermode pageRenderMode
+
+<h3>Cloud [@InteractiveInfo.CurrentRenderType]</h3>
+
+@if (InteractiveInfo.IsWaitingInteractive == false)
+{
+    <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" />
+    <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" />
+}
+else
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+
+
+@code {
+    private static IComponentRenderMode pageRenderMode = RenderMode.InteractiveServer;
+
+    private CancellationTokenSource _pageLifetimeCts = new();
+    // Токен, который срабатывает при закрытии/уничтожении страницы
+    public CancellationToken PageLifetimeToken => _pageLifetimeCts.Token;
+
+    private InteractiveInfoService InteractiveInfo { get; set; }
+
+    // [Inject] private ICloudNavigator _cloudNavigator { get; set; }
+
+    private CloudModel? SelectedCloud { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InteractiveInfo = new InteractiveInfoService(RendererInfo, AssignedRenderMode);
+        await base.OnInitializedAsync();
+    }
+
+    private void SetSelectedCloud(CloudModel? model)
+    {
+        SelectedCloud = model;
+    }
+
+    private void SelectedCloudOpened(CloudModel model) => SetSelectedCloud(model);
+    private void ClearSelectedCloudOpened() => SetSelectedCloud(null);
+
+    // Флаг для отслеживания состояния
+    private bool _isDisposed;
+    // Освобождение ресурсов при уничтожении компонента
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
+        // Отменяем все операции
+        _pageLifetimeCts?.Cancel();
+        // Освобождаем ресурсы
+        _pageLifetimeCts?.Dispose();
+    }
+}

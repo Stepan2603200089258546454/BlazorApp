@@ -1,10 +1,12 @@
 using BlazorApp.API;
 using BlazorApp.Client.Interfaces;
+using BlazorApp.Client.Services.Cloud;
 using BlazorApp.Client.Settings;
 using BlazorApp.Helpers;
 using BlazorApp.Pages;
 using BlazorApp.Pages.Account;
 using BlazorApp.Services;
+using BlazorApp.Services.Cloud;
 using DataContext;
 using DataContext.Configuration;
 using DataContext.Identity;
@@ -50,6 +52,9 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IFileListService, FileListService>();
 builder.Services.Configure<FileUploadSettings>(builder.Configuration.GetSection(nameof(FileUploadSettings)));
 builder.Services.AddScoped<FileHelper>();
+
+builder.Services.AddScoped<ICloudNavigator, CloudServerNavigator>();
+builder.Services.AddScoped<CloudProvider>();
 
 var app = builder.Build();
 

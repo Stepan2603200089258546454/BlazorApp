@@ -7,6 +7,7 @@
             ArgumentNullException.ThrowIfNull(endpoints);
 
             endpoints.MapFileUploadAPIEndpoints();
+            endpoints.MapCloudAPIEndpoints();
 
             return endpoints;
         }

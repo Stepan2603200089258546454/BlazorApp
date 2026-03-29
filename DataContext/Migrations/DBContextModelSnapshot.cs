@@ -113,6 +113,103 @@ namespace DataContext.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("DataContext.Models.Cloud.CloudFileData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Md5Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Sha256Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CloudFileData");
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.CloudItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("FileDataId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ParrentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PersonalCloudId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SystemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileDataId")
+                        .IsUnique();
+
+                    b.HasIndex("ParrentId");
+
+                    b.HasIndex("PersonalCloudId");
+
+                    b.ToTable("CloudItems");
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.PersonalCloud", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SystemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PersonalClouds");
+                });
+
             modelBuilder.Entity("DataContext.Models.FileEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -278,6 +375,42 @@ namespace DataContext.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DataContext.Models.Cloud.CloudItem", b =>
+                {
+                    b.HasOne("DataContext.Models.Cloud.CloudFileData", "FileData")
+                        .WithOne("CloudItem")
+                        .HasForeignKey("DataContext.Models.Cloud.CloudItem", "FileDataId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("DataContext.Models.Cloud.CloudItem", "Parrent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParrentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("DataContext.Models.Cloud.PersonalCloud", "PersonalCloud")
+                        .WithMany("Items")
+                        .HasForeignKey("PersonalCloudId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileData");
+
+                    b.Navigation("Parrent");
+
+                    b.Navigation("PersonalCloud");
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.PersonalCloud", b =>
+                {
+                    b.HasOne("DataContext.Models.ApplicationUser", "User")
+                        .WithMany("PersonalClouds")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataContext.Models.FileEntity", b =>
                 {
                     b.HasOne("DataContext.Models.ApplicationUser", "User")
@@ -385,6 +518,27 @@ namespace DataContext.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DataContext.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("PersonalClouds");
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.CloudFileData", b =>
+                {
+                    b.Navigation("CloudItem")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.CloudItem", b =>
+                {
+                    b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("DataContext.Models.Cloud.PersonalCloud", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

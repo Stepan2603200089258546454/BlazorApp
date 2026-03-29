@@ -1,0 +1,19 @@
+﻿@using BlazorApp.Client.Models.Cloud
+
+<div class="mb-3">
+    <label for="Model.DisplayName" class="form-label">@LableName</label>
+    <InputText @bind-Value="Model.DisplayName" type="text" class="form-control" placeholder="@LableName" />
+</div>
+
+<div class="mb-3">
+    <label for="Model.Description" class="form-label">@LableDescription</label>
+    <InputText @bind-Value="Model.Description" type="text" class="form-control" id="Model.Description" placeholder="@LableDescription" />
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EditCloudItemModel Model { get; set; }
+
+    public string LableName => $"Название {(Model.Type == CloudItemModel.ItemType.Folder ? "папки" : "файла")}";
+    public string LableDescription => $"Описание {(Model.Type == CloudItemModel.ItemType.Folder ? "папки" : "файла")}";
+}

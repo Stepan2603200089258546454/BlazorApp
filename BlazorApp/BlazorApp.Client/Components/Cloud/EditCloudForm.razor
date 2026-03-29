@@ -1,0 +1,16 @@
+﻿@using BlazorApp.Client.Models.Cloud
+
+<div class="mb-3">
+    <label for="Model.DisplayName" class="form-label">Название диска</label>
+    <InputText @bind-Value="Model.DisplayName" type="text" class="form-control" placeholder="Название диска" />
+</div>
+
+<div class="mb-3">
+    <label for="Model.Description" class="form-label">Описание диска</label>
+    <InputText @bind-Value="Model.Description" type="text" class="form-control" id="Model.Description" placeholder="Описание диска" />
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EditCloudModel Model { get; set; }
+}

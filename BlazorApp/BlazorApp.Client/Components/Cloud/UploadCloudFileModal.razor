@@ -1,0 +1,238 @@
+﻿@using BlazorApp.Client.Services.Cloud
+@using FileExstend
+@implements IAsyncDisposable
+
+<div class="modal fade" id="@(NameModal)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="@(NameModal)Label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="@(NameModal)Label">Окно отправки файлов</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" @onclick="ClearSelected"></button>
+            </div>
+            <div class="modal-body">
+                @if (string.IsNullOrEmpty(ErrorMessage) == false)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ErrorMessage
+                    </div>
+                }
+
+                <p>
+                    Загружайте
+                    
+                    @if (Settings.EnableMaxAllowedFiles)
+                    {
+                        <span>до @Settings.MaxAllowedFiles файлов </span>
+                    }
+                    else
+                    {
+                        <span>файлы </span>
+                    }
+
+                    @if (Settings.EnableMaxFileSize)
+                    {
+                        <span>размером до @FileExstensionHelper.FormatBytes(Settings.MaxFileSize):</span>
+                    }
+                </p>
+
+                <div class="FileDrop mb-3">
+                    <InputFile multiple OnChange="LoadFiles"></InputFile>
+                </div>
+
+                @if (isLoading)
+                {
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    if (SelectedFiles?.Count() > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover caption-top">
+                                <caption>Выбранные файлы (@SelectedFiles.Count())</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Названия</th>
+                                        <th scope="col">Последнее изменение</th>
+                                        <th scope="col">Размер (байт)</th>
+                                        <th scope="col">Тип контента</th>
+                                        <th scope="col">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                    @foreach (var file in SelectedFiles)
+                                    {
+                                        <tr>
+                                            <td>@file.Name</td>
+                                            <td>@file.LastModified.ToString()</td>
+                                            <td>@FileExstensionHelper.FormatBytes(file.Size)</td>
+                                            <td>@file.ContentType</td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger" @onclick="() => SelectedFiles.Remove(file)">
+                                                    Убрать
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    if (ErrorFiles?.Count() > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover caption-top">
+                                <caption>Ошибочные файлы (@ErrorFiles.Count())</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Названия</th>
+                                        <th scope="col">Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                    @foreach (var file in ErrorFiles)
+                                    {
+                                        <tr>
+                                            <td>@file.FileName</td>
+                                            <td>@file.ErrorMessage</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="ClearSelected">Закрыть</button>
+                @if (SelectedFiles?.Count() > 0)
+                {
+                    <button type="button" class="btn btn-primary" disabled="@isLoading" @onclick="SendFiles">Отправить</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string NameModal { get; set; }
+    [Parameter, EditorRequired]
+    public Guid? CloudId { get; set; }
+    [Parameter, EditorRequired]
+    public Guid? ParrentId { get; set; }
+    [Parameter]
+    public EventCallback OnSendFiles { get; set; }
+
+    [Inject] private ICloudNavigator _cloudNavigator { get; set; }
+
+    private CancellationTokenSource _pageLifetimeCts = new();
+    // Токен, который срабатывает при закрытии/уничтожении страницы
+    public CancellationToken PageLifetimeToken => _pageLifetimeCts.Token;
+
+    private bool isLoading { get; set; } = false;
+    public List<IBrowserFile> SelectedFiles { get; private set; } = [];
+    public List<ErrorFilesViewModel> ErrorFiles { get; private set; } = [];
+    public string? ErrorMessage { get; private set; }
+    public FileUploadSettings Settings { get; private set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSettings();
+        await base.OnInitializedAsync();
+    }
+
+    public async Task GetSettings()
+    {
+        var res = await _cloudNavigator.GetFileUploadSettings();
+        Settings = res.Value!;
+    }
+
+    public async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        if (Settings.EnableMaxAllowedFiles)
+        {
+            foreach (IBrowserFile file in e.GetMultipleFiles(e.FileCount))
+            {
+                bool fileCountes = SelectedFiles.Count() + 1 <= Settings.MaxAllowedFiles;
+                bool fileSize = Settings.EnableMaxFileSize ? file.Size <= Settings.MaxFileSize : true;
+                if (fileCountes == false)
+                {
+                    ErrorFiles.Add(new ErrorFilesViewModel()
+                    {
+                        FileName = file.Name,
+                        ErrorMessage = "Превышено кол-во отправляемых файлов",
+                    });
+                    continue;
+                }
+                if (fileSize == false)
+                {
+                    ErrorFiles.Add(new ErrorFilesViewModel()
+                    {
+                        FileName = file.Name,
+                        ErrorMessage = "Превышен допустимый размер отправляемого файла",
+                    });
+                    continue;
+                }
+                SelectedFiles.Add(file);
+            }
+        }
+        else
+        {
+            SelectedFiles.AddRange(e.GetMultipleFiles(e.FileCount));
+        }
+        isLoading = false;
+    }
+
+    public async Task SendFiles()
+    {
+        if (CloudId is null)
+        {
+            ErrorMessage = "Не выбрано расположение загрузки файлов";
+            StateHasChanged();
+            return;
+        }
+        isLoading = true;
+        StateHasChanged();
+        var result = await _cloudNavigator.CreateCloudFilesAsync(CloudId.Value, ParrentId, SelectedFiles, PageLifetimeToken);
+        ErrorMessage = result.ErrorMessage;
+        SelectedFiles.Clear();
+        isLoading = false;
+        StateHasChanged();
+        await OnSendFiles.InvokeAsync();
+    }
+    private void ClearSelected()
+    {
+        SelectedFiles.Clear();
+        ErrorFiles.Clear();
+        ErrorMessage = null;
+    }
+
+    // Флаг для отслеживания состояния
+    private bool _isDisposed;
+    // Освобождение ресурсов при уничтожении компонента
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
+        // Отменяем все операции
+        _pageLifetimeCts?.Cancel();
+        // Освобождаем ресурсы
+        _pageLifetimeCts?.Dispose();
+
+        ClearSelected();
+    }
+
+    public class ErrorFilesViewModel
+    {
+        public string FileName { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+}

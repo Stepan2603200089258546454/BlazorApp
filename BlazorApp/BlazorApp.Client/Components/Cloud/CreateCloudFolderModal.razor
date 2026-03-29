@@ -1,0 +1,39 @@
+﻿@using BlazorApp.Client.Models.Cloud
+@using System.Threading.Tasks
+
+<div class="modal fade" id="@(NameModal)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="@(NameModal)Label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="@(NameModal)Label">Окно создания папки</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                <CreateCloudFolderForm Model="Model" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="Close">Закрыть</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="Create">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateCloudFolderModel Model { get; set; } = new();
+    [Parameter, EditorRequired]
+    public string NameModal { get; set; }
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    [Parameter]
+    public EventCallback<CreateCloudFolderModel> OnCreate { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+    private async Task Create()
+    {
+        await OnCreate.InvokeAsync(Model);
+    }
+}

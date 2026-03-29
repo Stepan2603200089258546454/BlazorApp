@@ -1,0 +1,87 @@
+﻿@using BlazorApp.Client.Models.Cloud
+@using System.Threading.Tasks
+
+<div class="modal fade" id="@(NameModal)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="@(NameModal)Label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="@(NameModal)Label">Окно редактирования диска</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" @onclick="Close"></button>
+            </div>
+            @if (Model != null)
+            {
+                <div class="modal-body">
+                    <EditCloudForm Model="Model" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="Close">Закрыть</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="Edit">Отправить</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="Delete">Отправить</button>
+                </div>
+            }
+            else
+            {
+                <div class="modal-body">
+                    Не выбран диск
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="Close">Закрыть</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private EditCloudModel? Model { get; set; }
+    [Parameter, EditorRequired]
+    public CloudModel? CloudId { get; set; }
+    [Parameter, EditorRequired]
+    public string NameModal { get; set; }
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    [Parameter]
+    public EventCallback<EditCloudModel> OnEdit { get; set; }
+    [Parameter]
+    public EventCallback<EditCloudModel> OnDelete { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // if (CloudId != null)
+        // {
+        //     Model = new EditCloudModel()
+        //     {
+        //         Id = CloudId.Id,
+        //         DisplayName = CloudId.DisplayName,
+        //         Description = CloudId.Description,
+        //     };
+        // }
+        base.OnInitialized();
+    }
+    protected override void OnParametersSet()
+    {
+        if (CloudId != null)
+        {
+            Model = new EditCloudModel()
+            {
+                Id = CloudId.Id,
+                DisplayName = CloudId.DisplayName,
+                Description = CloudId.Description,
+            };
+        }
+        base.OnParametersSet();
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+    private async Task Edit()
+    {
+        await OnEdit.InvokeAsync(Model);
+    }
+    private async Task Delete()
+    {
+        await OnDelete.InvokeAsync(Model);
+    }
+}

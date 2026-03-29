@@ -9,3 +9,6 @@ Add-Migration название_миграции Update-Database
 add-migration <название_миграции> -context DBContext -project DataContext
 
 Название миграции представляет произвольное название, главное чтобы все миграции в проекте имели разные названия.
+
+Удалить созданную миграцию:
+Remove-Migration

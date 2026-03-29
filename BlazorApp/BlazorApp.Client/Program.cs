@@ -1,5 +1,6 @@
 using BlazorApp.Client.Interfaces;
 using BlazorApp.Client.Services;
+using BlazorApp.Client.Services.Cloud;
 using BlazorApp.Client.Settings;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -17,5 +18,7 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddTransient<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IFileListService, FileListService>();
+
+builder.Services.AddTransient<ICloudNavigator, CloudClientNavigator>();
 
 await builder.Build().RunAsync();

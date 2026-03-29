@@ -1,0 +1,496 @@
+﻿@using BlazorApp.Client.Models
+@using BlazorApp.Client.Models.Cloud
+@using BlazorApp.Client.Services.Cloud
+
+<CreateCloudFolderModal NameModal="CreateCloudFolder" OnCreate="CreateFolder" />
+<EditCloudItemModal NameModal="EditFolderModal" CloudId="EditItemModel" OnEdit="UpdateItem" OnClose="() => EditItemModel = null" />
+<UploadCloudFileModal NameModal="AddCloudFiles" CloudId="Cloud?.Id" ParrentId="OpenFolder?.Id" OnSendFiles="LoadItemPageAsync" />
+<ViewCloudItemModal NameModal="ViewFile" Model="SelectItem" CloudId="Cloud?.Id" ParrentId="OpenFolder?.Id" />
+<InfoCloudItemModal NameModal="InfoCloudItemModal" Model="SelectItem" />
+
+@if (Cloud == null)
+{
+    <p>Не выбран диск</p>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="row">
+                <div class="col d-flex align-items-center">
+                    Диск: @Cloud?.DisplayName
+                </div>
+                <div class="col-auto d-flex align-items-center">
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button class="dropdown-item"
+                                        data-bs-toggle="modal" data-bs-target="#CreateCloudFolder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
+                                        <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672Z" />
+                                        <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z" />
+                                    </svg>
+                                    Создать папку
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item"
+                                        data-bs-toggle="modal" data-bs-target="#AddCloudFiles">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-up" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M3.5 10a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 0 0 1h2A1.5 1.5 0 0 0 14 9.5v-8A1.5 1.5 0 0 0 12.5 0h-9A1.5 1.5 0 0 0 2 1.5v8A1.5 1.5 0 0 0 3.5 11h2a.5.5 0 0 0 0-1h-2z" />
+                                        <path fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z" />
+                                    </svg>
+                                    Добавить файлы
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item"
+                                        @onclick="LoadItemPageAsync">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                                    </svg>
+                                    Обновить
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item"
+                                        @onclick="CloseCloud">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                    </svg>
+                                    Закрыть
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        @foreach (var item in NavigationHistory)
+                        {
+                            <li class="breadcrumb-item" style="cursor: pointer;" @onclick="() => Navigate(item)">
+                                @(item?.DisplayName ?? "...")
+                            </li>
+                        }
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        @if (SelectItem != null)
+        {
+            <div class="card-header">
+                <div class="row">
+                    <div class="col d-flex align-items-center">
+                        Выбранный элемент: @SelectItem?.DisplayName
+                    </div>
+                    <div class="col-auto d-flex align-items-center">
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                    <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                </svg>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <button class="dropdown-item"
+                                            disabled="@(SelectItem?.Type != CloudItemModel.ItemType.Folder && OpenFolder != SelectItem)"
+                                            @onclick="async () => await OpenedFolder(SelectItem)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
+                                            <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z" />
+                                        </svg>
+                                        Открыть
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            data-bs-toggle="modal" data-bs-target="#ViewFile"
+                                            disabled="@(SelectItem?.Type != CloudItemModel.ItemType.File)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z" />
+                                            <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z" />
+                                        </svg>
+                                        Просмотреть
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            data-bs-toggle="modal" data-bs-target="#EditFolderModal"
+                                            disabled="@(SelectItem == null)"
+                                            @onclick="() => EditItemModel = SelectItem">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                                        </svg>
+                                        Редактировать
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            data-bs-toggle="modal" data-bs-target="#InfoCloudItemModal"
+                                            disabled="@(SelectItem == null)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                                        </svg>
+                                        Информация
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            disabled="@(SelectItem == null)"
+                                            @onclick="() => SelectItem = null">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                        </svg>
+                                        Снять выделение
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            disabled="@(SelectItem == null)"
+                                            @onclick="() => DeleteItem(SelectItem)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
+                                        </svg>
+                                        Удалить
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="card-body">
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @if (Clouds?.Count() > 0)
+                {
+                    @* <div class="table-responsive"> *@
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Название</th>
+                                <th scope="col">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            @foreach (CloudItemModel item in Clouds)
+                            {
+                                <tr class="@(item.Id == SelectItem?.Id ? "table-secondary" : string.Empty)"
+                                    @onclick="() => SelectItem = item"
+                                    @ondblclick="async () => await OpenedFolder(item)">
+                                    <td>
+                                        @if (item.Type == CloudItemModel.ItemType.File)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z" />
+                                            </svg>
+                                        }
+                                        else if (item.Type == CloudItemModel.ItemType.Folder)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
+                                                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z" />
+                                            </svg>
+                                        }
+                                    </td>
+                                    <td style="word-break: break-all; white-space: normal;">
+                                        @item.DisplayName
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                                    <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                                </svg>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button class="dropdown-item"
+                                                            disabled="@(item.Type != CloudItemModel.ItemType.Folder)"
+                                                            @onclick="async () => await OpenedFolder(item)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
+                                                            <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z" />
+                                                        </svg>
+                                                        Открыть
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item"
+                                                            data-bs-toggle="modal" data-bs-target="#ViewFile"
+                                                            disabled="@(item.Type != CloudItemModel.ItemType.File)"
+                                                            @onclick="() => SelectItem = item">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                                            <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z" />
+                                                            <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z" />
+                                                        </svg>
+                                                        Просмотреть
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item"
+                                                            data-bs-toggle="modal" data-bs-target="#EditFolderModal"
+                                                            @onclick="() => EditItemModel = item">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                                                        </svg>
+                                                        Редактировать
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item"
+                                                            data-bs-toggle="modal" data-bs-target="#InfoCloudItemModal"
+                                                            @onclick="() => SelectItem = item">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                                            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                                                        </svg>
+                                                        Информация
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item" @onclick="async () => await DeleteItem(item)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
+                                                        </svg>
+                                                        Удалить
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @* </div> *@
+                }
+                else
+                {
+                    <p>Нет файлов</p>
+                }
+            }
+        </div>
+        <div class="card-footer">
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public CloudModel Cloud { get; set; }
+    [Parameter] public EventCallback OnCloseCloud { get; set; }
+    [Parameter] public EventCallback<string> OnErrorMessage { get; set; }
+    [Inject] private ICloudNavigator _cloudNavigator { get; set; }
+
+    private bool isLoading { get; set; } = false;
+    private CloudItemModel? OpenFolder { get; set; }
+    private CloudItemModel? SelectItem { get; set; }
+    private IEnumerable<CloudItemModel>? Clouds { get; set; }
+    private List<CloudItemModel?> NavigationHistory { get; set; } = [];
+
+    private CloudItemModel? EditItemModel { get; set; }
+
+    private CancellationTokenSource _pageLifetimeCts = new();
+    public CancellationToken PageLifetimeToken => _pageLifetimeCts.Token;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Cloud != null)
+        {
+            await LoadItemPageAsync();
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task LoadItemPageAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+        if (NavigationHistory.Contains(OpenFolder) == false) NavigationHistory.Add(OpenFolder);
+        var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+        if (result.Success)
+        {
+            Clouds = result.Value;
+        }
+        else
+        {
+            await ErrorMessage(result.ErrorMessage);
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+    private async Task OpenedFolder(CloudItemModel model)
+    {
+        if (model.Type == CloudItemModel.ItemType.Folder)
+        {
+            OpenFolder = model;
+            SelectItem = null;
+            isLoading = true;
+            StateHasChanged();
+            if (NavigationHistory.Contains(OpenFolder) == false && OpenFolder.Type == CloudItemModel.ItemType.Folder)
+                NavigationHistory.Add(OpenFolder);
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            if (result.Success)
+            {
+                Clouds = result.Value;
+            }
+            else
+            {
+                await ErrorMessage(result.ErrorMessage);
+            }
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateFolder(CreateCloudFolderModel model)
+    {
+        isLoading = true;
+        StateHasChanged();
+        var resultCreateFolder = await _cloudNavigator.CreateFolderAsync(Cloud.Id, OpenFolder?.Id, model, PageLifetimeToken);
+        if (resultCreateFolder.Success)
+        {
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            if (result.Success)
+            {
+                Clouds = result.Value;
+            }
+            else
+            {
+                await ErrorMessage(result.ErrorMessage);
+            }
+        }
+        else
+        {
+            await ErrorMessage(resultCreateFolder.ErrorMessage);
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+    private async Task UpdateItem(EditCloudItemModel model)
+    {
+        isLoading = true;
+        StateHasChanged();
+        var resultCreateFolder = await _cloudNavigator.UpdateItemAsync(Cloud.Id, OpenFolder?.Id, model, PageLifetimeToken);
+        if (resultCreateFolder.Success)
+        {
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            if (result.Success)
+            {
+                Clouds = result.Value;
+            }
+            else
+            {
+                await ErrorMessage(result.ErrorMessage);
+            }
+        }
+        else
+        {
+            await ErrorMessage(resultCreateFolder.ErrorMessage);
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteItem(CloudItemModel model)
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        Result deleteResult = await _cloudNavigator.DeleteCloudItemAsync(Cloud.Id, model.Id, PageLifetimeToken);
+
+        if (deleteResult.Success)
+        {
+            if (SelectItem == model) SelectItem = null;
+
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            if (result.Success)
+            {
+                Clouds = result.Value;
+            }
+            else
+            {
+                await ErrorMessage(result.ErrorMessage);
+            }
+        }
+        else
+        {
+            await ErrorMessage(deleteResult.ErrorMessage);
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task Navigate(CloudItemModel? model)
+    {
+        if (OpenFolder == model) return;
+        bool isNullOrFolder = model == null || model.Type == CloudItemModel.ItemType.Folder;
+        if (isNullOrFolder && NavigationHistory.Contains(model))
+        {
+            int indexModel = NavigationHistory.IndexOf(model);
+            NavigationHistory.RemoveRange(indexModel, NavigationHistory.Count() - indexModel);
+            OpenFolder = model;
+            if (isNullOrFolder)
+            {
+                isLoading = true;
+                StateHasChanged();
+                if (NavigationHistory.Contains(OpenFolder) == false)
+                    NavigationHistory.Add(OpenFolder);
+                var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+                if (result.Success)
+                {
+                    Clouds = result.Value;
+                }
+                else
+                {
+                    await ErrorMessage(result.ErrorMessage);
+                }
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task CloseCloud()
+    {
+        OpenFolder = null;
+        SelectItem = null;
+        Clouds = null;
+        NavigationHistory.Clear();
+        await OnCloseCloud.InvokeAsync();
+    }
+    private async Task ErrorMessage(string error)
+    {
+        await OnErrorMessage.InvokeAsync(error);
+    }
+}

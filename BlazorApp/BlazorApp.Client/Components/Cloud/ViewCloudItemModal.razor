@@ -1,4 +1,5 @@
 ﻿@using BlazorApp.Client.Models.Cloud
+@using FileExstend.Models
 
 <div class="modal fade" id="@(NameModal)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="@(NameModal)Label" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
@@ -11,6 +12,51 @@
             {
                 <div class="modal-body">
                     Файл @Model.DisplayName
+
+                    @if (string.IsNullOrEmpty(FilePath) == false && FileEx != null)
+                    {
+                        @if (FileEx.Type == FileType.Image)
+                        {
+                            <div class="text-center">
+                                <img src="@FilePath" class="rounded" alt="Изображение" loading="lazy" style="max-width: 100%; max-height:82vh;">
+                            </div>
+                        }
+                        else if (FileEx.Type == FileType.Video)
+                        {
+                            <center>
+                                <video controls preload="metadata" name="media" style="max-width: 100%; max-height:82vh;">
+                                    <source src="@FilePath" type="@FileEx.MIME" />
+                                </video>
+                            </center>
+                        }
+                        else if (FileEx.Type == FileType.Audio)
+                        {
+                            <center>
+                                <figure>
+                                    <audio controls src="@FilePath" preload="metadata" type="@FileEx.MIME" style="width: 100%"></audio>
+                                </figure>
+                            </center>
+                        }
+                        else if (FileEx.Type is FileType.PDF or FileType.Text or FileType.Web)
+                        {
+                            <center>
+                                <iframe src="@FilePath" loading="lazy" style="width: 100%; height:82vh;">
+                                </iframe>
+                            </center>
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                Тип файла не поддерживает просмотр
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            Не передан файл
+                        </div>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -54,4 +100,47 @@
     public Guid? ParrentId { get; set; }
     [Parameter, EditorRequired]
     public string NameModal { get; set; }
+
+    private FileExstension? FileEx;
+    private string FilePath = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Model != null)
+        {
+            if (Model?.Type == CloudItemModel.ItemType.File)
+            {
+                string parrentPath = ParrentId != null ? ParrentId + "/" : string.Empty;
+                FilePath = $"Cloudes/{parrentPath}{Model.SystemName}";
+                if (string.IsNullOrEmpty(FilePath) == false)
+                    FileEx = FileExstensionHelper.GetExtensionType(FilePath);
+            }
+            else
+            {
+                FilePath = string.Empty;
+                FileEx = null;
+            }
+        }
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Model != null)
+        {
+            if (Model?.Type == CloudItemModel.ItemType.File)
+            {
+                string parrentPath = ParrentId != null ? ParrentId + "/" : string.Empty;
+                FilePath = $"Cloudes/{parrentPath}{Model.SystemName}";
+                if (string.IsNullOrEmpty(FilePath) == false)
+                    FileEx = FileExstensionHelper.GetExtensionType(FilePath);
+            }
+            else
+            {
+                FilePath = string.Empty;
+                FileEx = null;
+            }
+        }
+        await base.OnParametersSetAsync();
+    }
 }

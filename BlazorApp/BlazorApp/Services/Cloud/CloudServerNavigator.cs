@@ -8,6 +8,7 @@ using DataContext.Models.Cloud;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace BlazorApp.Services.Cloud
@@ -36,6 +37,10 @@ namespace BlazorApp.Services.Cloud
         {
             return await _cloudProvider.GetMainPageAsync(await GetUserAsync(), cancellationToken);
         }
+        public async Task<Result<CloudModel>> GetPersonalCloudAsync(Guid cloudId, CancellationToken cancellationToken = default)
+        {
+            return await _cloudProvider.GetPersonalCloudAsync(cloudId, await GetUserAsync(), cancellationToken);
+        }
         public async Task<Result> CreateCloudAsync(CreateCloudModel model, CancellationToken cancellationToken = default)
         {
             return await _cloudProvider.CreateCloudAsync(model.DisplayName, model.Description, await GetUserAsync(), cancellationToken);
@@ -53,6 +58,10 @@ namespace BlazorApp.Services.Cloud
         public async ValueTask<Result<FileUploadSettings>> GetFileUploadSettings(CancellationToken cancellationToken = default)
         {
             return _cloudProvider.GetFileUploadSettings();
+        }
+        public async ValueTask<Result<CloudSettings>> GetCloudSettings(CancellationToken cancellationToken = default)
+        {
+            return _cloudProvider.GetCloudSettings();
         }
         public async Task<Result<IEnumerable<CloudItemModel>>> GetCloudItemAsync(Guid cloudId, Guid? parrentId, CancellationToken cancellationToken = default)
         {
@@ -72,9 +81,9 @@ namespace BlazorApp.Services.Cloud
             return await _cloudProvider.DeleteCloudItemAsync(cloudId, id, await GetUserAsync(), cancellationToken);
         }
 
-        public async Task<Result> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, IEnumerable<IBrowserFile> files, CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<UploadFileResult>>> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, IEnumerable<IBrowserFile> files, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.CreateCloudFilesAsync(cloudId, parrentId, files, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.CreateCloudFilesAsync(cloudId, parrentId, files.ToList(), await GetUserAsync(), cancellationToken);
         }
     }
 }

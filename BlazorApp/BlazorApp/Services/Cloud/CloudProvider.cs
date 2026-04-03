@@ -2,12 +2,14 @@
 using BlazorApp.Client.Models.Cloud;
 using BlazorApp.Client.Pages;
 using BlazorApp.Client.Settings;
+using BlazorApp.Models.Clouds;
 using DataContext.Context;
 using DataContext.Models;
 using DataContext.Models.Cloud;
 using FileExstend;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
@@ -21,18 +23,21 @@ namespace BlazorApp.Services.Cloud
         protected readonly UserManager<ApplicationUser> _userManager;
         protected readonly IWebHostEnvironment _webHostEnvironment;
         protected readonly IOptionsMonitor<FileUploadSettings> _optionsMonitorFileUploadSettings;
-        protected const string MainFolder = "Cloudes";
+        protected readonly IOptionsMonitor<CloudSettings> _optionsMonitorCloudSettings;
+        public const string MainFolder = "Cloudes";
 
         public CloudProvider(
             IWebHostEnvironment webHostEnvironment,
             IDbContextFactory<DBContext> dbContextFactory,
             UserManager<ApplicationUser> userManager,
-            IOptionsMonitor<FileUploadSettings> optionsMonitorFileUploadSettings)
+            IOptionsMonitor<FileUploadSettings> optionsMonitorFileUploadSettings,
+            IOptionsMonitor<CloudSettings> optionsMonitorCloudSettings)
         {
             _webHostEnvironment = webHostEnvironment;
             _dbContextFactory = dbContextFactory;
             _userManager = userManager;
             _optionsMonitorFileUploadSettings = optionsMonitorFileUploadSettings;
+            _optionsMonitorCloudSettings = optionsMonitorCloudSettings;
         }
 
         private static void ExistsOrCreateDirectory(string path)
@@ -44,14 +49,13 @@ namespace BlazorApp.Services.Cloud
         {
             try
             {
-                ApplicationUser appUser = await _userManager.GetUserAsync(user) 
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
                 string pathMainFolder = Path.Combine(_webHostEnvironment.WebRootPath, MainFolder);
-
                 ExistsOrCreateDirectory(pathMainFolder);
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
                 List<CloudModel> personalClouds = await context.PersonalClouds
                     .AsNoTracking()
@@ -62,6 +66,9 @@ namespace BlazorApp.Services.Cloud
                         SystemName = x.SystemName,
                         DisplayName = x.DisplayName,
                         Description = x.Description,
+                        Size = context.CloudFileData
+                            .Where(t => t.CloudItem.PersonalCloudId == x.Id)
+                            .Sum(t => t.Size)
                     })
                     .ToListAsync();
 
@@ -76,14 +83,61 @@ namespace BlazorApp.Services.Cloud
                 return Result<IEnumerable<CloudModel>>.OnError(ex);
             }
         }
+        public async Task<Result<CloudModel>> GetPersonalCloudAsync(Guid cloudId, ClaimsPrincipal user, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
+                    ?? throw new Exception("User not found");
+
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+                CloudModel? personalCloud = await context.PersonalClouds
+                    .AsNoTracking()
+                    .Where(x => x.UserId == appUser.Id && x.Id == cloudId)
+                    .Select(x => new CloudModel()
+                    {
+                        Id = x.Id,
+                        SystemName = x.SystemName,
+                        DisplayName = x.DisplayName,
+                        Description = x.Description,
+                        Size = context.CloudFileData
+                            .Where(t => t.CloudItem.PersonalCloudId == x.Id)
+                            .Sum(t => t.Size)
+                    })
+                    .FirstOrDefaultAsync();
+
+                return Result<CloudModel>.OnSuccess(personalCloud);
+            }
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                return Result<CloudModel>.OnCanceled(ex);
+            }
+            catch (Exception ex)
+            {
+                return Result<CloudModel>.OnError(ex);
+            }
+        }
         public async Task<Result> CreateCloudAsync(string displayName, string description, ClaimsPrincipal user, CancellationToken cancellationToken = default)
         {
             try
             {
-                ApplicationUser appUser = await _userManager.GetUserAsync(user) 
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+                CloudSettings cloudSettings = GetCloudSettings().Value!;
+
+                if (cloudSettings.EnableMaxClouds)
+                {
+                    int currentCountCloudPerson = await context.PersonalClouds
+                        .Where(x => x.UserId == appUser.Id)
+                        .CountAsync();
+
+                    if (currentCountCloudPerson + 1 > cloudSettings.MaxClouds)
+                        return Result.OnError("Превышено кол-во дисков");
+                }
 
                 await context.PersonalClouds.AddAsync(new PersonalCloud()
                 {
@@ -109,12 +163,12 @@ namespace BlazorApp.Services.Cloud
         {
             try
             {
-                ApplicationUser appUser = await _userManager.GetUserAsync(user) 
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-                PersonalCloud cloud = await context.PersonalClouds.FirstOrDefaultAsync(c => c.Id == id && c.UserId == appUser.Id) 
+                PersonalCloud cloud = await context.PersonalClouds.FirstOrDefaultAsync(c => c.Id == id && c.UserId == appUser.Id)
                     ?? throw new Exception("Cloud not found");
 
                 cloud.DisplayName = displayName;
@@ -137,12 +191,12 @@ namespace BlazorApp.Services.Cloud
         {
             try
             {
-                ApplicationUser appUser = await _userManager.GetUserAsync(user) 
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-                PersonalCloud cloud = await context.PersonalClouds.FirstOrDefaultAsync(c => c.Id == id && c.UserId == appUser.Id) 
+                PersonalCloud cloud = await context.PersonalClouds.FirstOrDefaultAsync(c => c.Id == id && c.UserId == appUser.Id)
                     ?? throw new Exception("Cloud not found");
 
                 context.PersonalClouds.Remove(cloud);
@@ -165,6 +219,12 @@ namespace BlazorApp.Services.Cloud
         {
             return Result<FileUploadSettings>.OnSuccess(_optionsMonitorFileUploadSettings.CurrentValue ?? FileUploadSettings.Empty);
         }
+        public Result<CloudSettings> GetCloudSettings()
+        {
+            return Result<CloudSettings>.OnSuccess(_optionsMonitorCloudSettings.CurrentValue ?? CloudSettings.Empty);
+        }
+
+
         public async Task<Result<IEnumerable<CloudItemModel>>> GetCloudItemAsync(Guid cloudId, Guid? parrentId, ClaimsPrincipal user, CancellationToken cancellationToken = default)
         {
             try
@@ -192,7 +252,7 @@ namespace BlazorApp.Services.Cloud
                     IEnumerable<Guid?> filesNotFoundDisc = files
                         .Where(x => discFiles.Contains(x.SystemName) == false && x.FileDataId != null)
                         .Select(x => x.FileDataId);
-                    
+
                     if (filesNotFoundDisc.Count() > 0)
                     {
                         List<CloudFileData> dbPastFile = await context.CloudFileData
@@ -265,7 +325,7 @@ namespace BlazorApp.Services.Cloud
 
                 using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-                var item = await context.CloudItems.FirstOrDefaultAsync(x => x.Id == id && x.PersonalCloudId == cloudId) 
+                var item = await context.CloudItems.FirstOrDefaultAsync(x => x.Id == id && x.PersonalCloudId == cloudId)
                     ?? throw new Exception("Item not found");
 
                 if (item.Type == CloudItem.ItemType.Folder)
@@ -303,9 +363,9 @@ namespace BlazorApp.Services.Cloud
                 ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-                var item = await context.CloudItems.FirstOrDefaultAsync(x => x.Id == id && x.PersonalCloudId == cloudId)
+                CloudItem item = await context.CloudItems.FirstOrDefaultAsync(x => x.Id == id && x.PersonalCloudId == cloudId)
                     ?? throw new Exception("Item not found");
 
                 if (item.FileDataId != null)
@@ -331,7 +391,7 @@ namespace BlazorApp.Services.Cloud
                 return Result.OnError(ex);
             }
         }
-        public async Task<Result> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, IEnumerable<IBrowserFile> files, ClaimsPrincipal user, CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<UploadFileResult>>> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, List<IBrowserFile> files, ClaimsPrincipal user, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -342,19 +402,62 @@ namespace BlazorApp.Services.Cloud
                 ExistsOrCreateDirectory(targetFolderParrent);
 
                 FileUploadSettings settings = GetFileUploadSettings().Value!;
+                CloudSettings cloudSettings = GetCloudSettings().Value!;
+
+                List<UploadFileResult> results = new List<UploadFileResult>();
 
                 // отсекаем что не подходит по настройкам
-                files = files
-                    .Where(x => settings.EnableMaxFileSize ? x.Size <= settings.MaxFileSize : true)
-                    .Take(settings.EnableMaxAllowedFiles ? settings.MaxAllowedFiles : files.Count());
 
-                if (files.Count() <= 0) 
-                    return Result.OnError("Нет файлов для сохранения");
+                IEnumerable<IBrowserFile> errorFilesSize = files.Where(x => settings.EnableMaxFileSize ? x.Size >= settings.MaxFileSize : false);
+                results.AddRange(errorFilesSize.Select(x => new UploadFileResult()
+                {
+                    Success = false,
+                    FileName = x.Name,
+                    Message = "Превышен размер загружаемого файла"
+                }));
+                foreach (var errorFile in errorFilesSize)
+                    files.Remove(errorFile);
+
+                var errorFilesCount = files.Skip(settings.EnableMaxAllowedFiles ? settings.MaxAllowedFiles : files.Count());
+                results.AddRange(errorFilesCount.Select(x => new UploadFileResult()
+                {
+                    Success = false,
+                    FileName = x.Name,
+                    Message = "Превышено кол-во загружаемых файлов"
+                }));
+                foreach (var errorFile in errorFilesCount)
+                    files.Remove(errorFile);
+
+                if (files.Count() <= 0)
+                    return Result<IEnumerable<UploadFileResult>>.OnSuccess(results);
 
                 await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
+                long cloudSize = cloudSettings.EnableMaxCloudSize ? await context.CloudFileData
+                    .AsNoTracking()
+                    .Where(x => x.CloudItem.PersonalCloudId == cloudId)
+                    .SumAsync(x => x.Size) : 0;
+
                 foreach (IBrowserFile file in files)
                 {
+                    if (cloudSettings.EnableMaxCloudSize)
+                    {
+                        if (cloudSize + file.Size <= cloudSettings.MaxCloudSize)
+                        {
+                            cloudSize += file.Size;
+                        }
+                        else
+                        {
+                            results.Add(new UploadFileResult()
+                            {
+                                Success = false,
+                                FileName = file.Name,
+                                Message = "Превышен допустимый размер диска"
+                            });
+                            continue;
+                        }
+                    }
+
                     string strustedFilePath = GenerateFileName(targetFolderParrent, file.Name, out string trustedFileName);
 
                     byte[] fileData = await GetFileBytes(file);
@@ -381,19 +484,26 @@ namespace BlazorApp.Services.Cloud
                             Sha256Hash = sha256Hash
                         }
                     });
+
+                    results.Add(new UploadFileResult()
+                    {
+                        Success = true,
+                        FileName = file.Name,
+                        Message = "Успешно загружен"
+                    });
                 }
 
                 await context.SaveChangesAsync(cancellationToken);
 
-                return Result.OnSuccess();
+                return Result<IEnumerable<UploadFileResult>>.OnSuccess(results);
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
-                return Result.OnCanceled(ex);
+                return Result<IEnumerable<UploadFileResult>>.OnCanceled(ex);
             }
             catch (Exception ex)
             {
-                return Result.OnError(ex);
+                return Result<IEnumerable<UploadFileResult>>.OnError(ex);
             }
         }
         public async Task<Result<byte[]>> DownloadCloudFilesAsync(Guid cloudId, Guid? parrentId, string systemName, ClaimsPrincipal user, CancellationToken cancellationToken = default)
@@ -438,6 +548,86 @@ namespace BlazorApp.Services.Cloud
                 return Result<byte[]>.OnError(ex);
             }
         }
+        public async Task<Result<FileStreamContent>> ViewCloudFilesAsync(Guid? parrentId, string systemName, ClaimsPrincipal user, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                ApplicationUser appUser = await _userManager.GetUserAsync(user)
+                        ?? throw new Exception("User not found");
+
+                string targetFolderParrent = Path.Combine(_webHostEnvironment.WebRootPath, MainFolder, appUser.Id, parrentId?.ToString() ?? string.Empty);
+                ExistsOrCreateDirectory(targetFolderParrent);
+
+                string filePath = Path.Combine(targetFolderParrent, systemName);
+
+                if (File.Exists(filePath) == false)
+                {
+                    await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+                    CloudFileData data = await context.CloudFileData
+                        .AsNoTracking()
+                        .Where(x => x.CloudItem.SystemName == systemName && x.CloudItem.ParrentId == parrentId && x.CloudItem.PersonalCloud.UserId == appUser.Id)
+                        .FirstOrDefaultAsync() ?? throw new Exception("Не найден файл");
+
+                    await using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                    {
+                        await fs.WriteAsync(data.Data, 0, data.Data.Length);
+                    }
+                }
+
+                // Определяем MIME тип автоматически
+                if (new FileExtensionContentTypeProvider().TryGetContentType(filePath, out string? contentType) == false)
+                    contentType = "application/octet-stream";
+
+                // Открываем поток файла для эффективной передачи
+                FileStream fileStream = File.OpenRead(filePath);
+
+                return Result<FileStreamContent>.OnSuccess(new FileStreamContent()
+                {
+                    FileStream = fileStream,
+                    ContentType = contentType
+                });
+            }
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                return Result<FileStreamContent>.OnCanceled(ex);
+            }
+            catch (Exception ex)
+            {
+                return Result<FileStreamContent>.OnError(ex);
+            }
+        }
+
+        //public async Task<Result<List<CloudSize>>> GetCloudSize(ClaimsPrincipal user, CancellationToken cancellationToken = default)
+        //{
+        //    try
+        //    {
+        //        ApplicationUser appUser = await _userManager.GetUserAsync(user)
+        //            ?? throw new Exception("User not found");
+
+        //        await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        //        List<CloudSize> cloudSize = await context.CloudFileData
+        //            .Where(x => x.CloudItem.PersonalCloud.UserId == appUser.Id)
+        //            .GroupBy(x => x.CloudItem.PersonalCloud)
+        //            .Select(x => new CloudSize()
+        //            {
+        //                Cloud = x.Key,
+        //                Size = x.Sum(x => x.Size)
+        //            })
+        //            .ToListAsync();
+
+        //        return Result<List<CloudSize>>.OnSuccess(cloudSize);
+        //    }
+        //    catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+        //    {
+        //        return Result<List<CloudSize>>.OnCanceled(ex);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Result<List<CloudSize>>.OnError(ex);
+        //    }
+        //}
 
         private static async Task<byte[]> GetFileBytes(IBrowserFile file)
         {
@@ -464,7 +654,7 @@ namespace BlazorApp.Services.Cloud
             }
             throw new IOException("Ошибка генерации имени файла, не удалось создать укальное имя");
         }
-        
+
         private static string ComputeMd5Hash(byte[] data)
         {
             using MD5 md5 = MD5.Create();

@@ -11,7 +11,7 @@
 @if (InteractiveInfo.IsWaitingInteractive == false)
 {
     <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" />
-    <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" />
+    <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" OnUploadCloudModel="StateHasChanged" />
 }
 else
 {

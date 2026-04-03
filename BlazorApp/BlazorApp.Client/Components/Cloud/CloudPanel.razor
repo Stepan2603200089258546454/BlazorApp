@@ -16,21 +16,44 @@
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
-            <div class="col-auto d-flex align-items-center">
+            <div class="col d-flex align-items-center">
                 <h5 class="card-title" style="margin:0;">
                     Список дисков
                 </h5>
             </div>
-            <div class="col"></div>
             <div class="col-auto d-flex align-items-center">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#CreateCloudModal">
-                    Создать диск
-                </button>
-            </div>
-            <div class="col-auto d-flex align-items-center">
-                <button type="button" class="btn btn-primary" @onclick="LoadMainPageAsync">
-                    Обновить
-                </button>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                        </svg>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button class="dropdown-item"
+                                    data-bs-toggle="modal" data-bs-target="#CreateCloudModal"
+                                    disabled="@(Settings?.EnableMaxClouds == true ? Clouds?.Count() >= Settings.MaxClouds : false)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-up" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M3.5 10a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 0 0 1h2A1.5 1.5 0 0 0 14 9.5v-8A1.5 1.5 0 0 0 12.5 0h-9A1.5 1.5 0 0 0 2 1.5v8A1.5 1.5 0 0 0 3.5 11h2a.5.5 0 0 0 0-1h-2z" />
+                                    <path fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z" />
+                                </svg>
+                                Создать диск
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item"
+                                    @onclick="async () => await LoadMainPageAsync()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+                                </svg>
+                                Обновить
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
     </div>
@@ -48,53 +71,90 @@
         {
             @if (Clouds?.Count() > 0)
             {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">Id</th>
-                                <th scope="col">Icons</th>
-                                <th scope="col">SystemName</th>
-                                <th scope="col">DisplayName</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
-                            @foreach (CloudModel item in Clouds)
-                            {
-                                <tr @ondblclick="async () => await SelectedCloudOpened(item)">
-                                    <th scope="row">@item.Id</th>
-                                    <td>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud" viewBox="0 0 16 16">
-                                            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z" />
-                                        </svg>
-                                    </td>
-                                    <td>@item.SystemName</td>
-                                    <td>@item.DisplayName</td>
-                                    <td>@item.Description</td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn btn-primary"
-                                                data-bs-toggle="modal" data-bs-target="#EditCloudModal"
-                                                @onclick="() => SelectedCloudEditor(item)">
-                                            Редактировать
+                @* <div class="table-responsive"> *@
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Название</th>
+                            <th scope="col">Размер</th>
+                            <th scope="col">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @foreach (CloudModel item in Clouds)
+                        {
+                            <tr class="@(item.Id == SelectedCloud?.Id ? "table-secondary" : string.Empty)"
+                                @ondblclick="async () => await SelectedCloudOpened(item)">
+                                <td>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud" viewBox="0 0 16 16">
+                                        <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z" />
+                                    </svg>
+                                </td>
+                                <td style="word-break: break-all; white-space: normal;">
+                                    @item.DisplayName
+                                </td>
+                                <td>
+                                    @if (Settings?.EnableMaxCloudSize == true)
+                                    {
+                                        @(FileExstensionHelper.FormatBytes(item.Size) + " / " + FileExstensionHelper.FormatBytes(Settings.MaxCloudSize))
+                                    }
+                                    else
+                                    {
+                                        @FileExstensionHelper.FormatBytes(item.Size)
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                            </svg>
                                         </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <button class="dropdown-item"
+                                                        @onclick="async () => await SelectedCloudOpened(item)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
+                                                        <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z" />
+                                                    </svg>
+                                                    Открыть
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item"
+                                                        data-bs-toggle="modal" data-bs-target="#EditCloudModal"
+                                                        @onclick="() => SelectedCloudEditor(item)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                                                    </svg>
+                                                    Редактировать
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item" @onclick="async () => await DeleteCloud(item)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
+                                                    </svg>
+                                                    Удалить
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @* </div> *@
             }
             else
             {
                 <p>Нет дисков</p>
             }
         }
-    </div>
-    <div class="card-footer">
-        @SelectedCloud?.DisplayName
     </div>
 </div>
 
@@ -109,7 +169,7 @@
     private string Message { get; set; } = string.Empty;
 
     private IEnumerable<CloudModel>? Clouds { get; set; }
-
+    private CloudSettings Settings { get; set; }
     private CloudModel? SelectedCloudEdit { get; set; }
     [Parameter] public CloudModel? SelectedCloud { get; set; }
 
@@ -122,8 +182,15 @@
         if (InteractiveInfo.IsWaitingInteractive == false)
         {
             await LoadMainPageAsync();
+            await GetCloudSettings();
         }
         await base.OnInitializedAsync();
+    }
+
+    private async Task GetCloudSettings()
+    {
+        var result = await _cloudNavigator.GetCloudSettings();
+        Settings = result.Value!;
     }
 
     private async Task LoadMainPageAsync()
@@ -174,7 +241,7 @@
     }
     private async Task SelectedCloudOpened(CloudModel model) => await SetCloudOpened(model);
     private async Task ClearSelectedCloudOpened() => await SetCloudOpened(null);
-    
+
 
     private async Task EditCloud(EditCloudModel model)
     {
@@ -215,6 +282,29 @@
             Message = deleteResult.ErrorMessage;
         }
         SelectedCloudEdit = null;
+        await ClearSelectedCloudOpened();
+        isLoading = false;
+        StateHasChanged();
+    }
+    private async Task DeleteCloud(CloudModel model)
+    {
+        isLoading = true;
+        StateHasChanged();
+        var deleteResult = await _cloudNavigator.DeleteCloudAsync(model.Id, PageLifetimeToken);
+        if (deleteResult.Success)
+        {
+            var result = await _cloudNavigator.GetMainPageAsync(PageLifetimeToken);
+            if (result.Success)
+                Clouds = result.Value;
+            else
+                Message = result.ErrorMessage;
+        }
+        else
+        {
+            Message = deleteResult.ErrorMessage;
+        }
+        SelectedCloudEdit = null;
+        await ClearSelectedCloudOpened();
         isLoading = false;
         StateHasChanged();
     }

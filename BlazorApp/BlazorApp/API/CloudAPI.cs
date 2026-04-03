@@ -3,6 +3,7 @@ using BlazorApp.Models.Request;
 using BlazorApp.Services.Cloud;
 using FileExstend;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace BlazorApp.API
 {
@@ -14,6 +15,11 @@ namespace BlazorApp.API
 
             endpoints.MapPost("cloud/file/dowload", PostDownload)
                 .RequireAuthorization();
+            endpoints.MapGet(CloudProvider.MainFolder + "/{parrentName}/{fileName}", ViewFileFromParrent)
+                .RequireAuthorization();
+            endpoints.MapGet(CloudProvider.MainFolder + "/{fileName}", ViewFile)
+                .RequireAuthorization();
+            //endpoints.MapGet(CloudProvider.MainFolder + "/{*fileName}", Results.NotFound);
 
             return endpoints;
         }
@@ -29,6 +35,28 @@ namespace BlazorApp.API
                     );
             else
                 return TypedResults.BadRequest(result.ErrorMessage);
+        }
+        private static async Task<IResult> ViewFileFromParrent(HttpContext context, string parrentName, string fileName, [FromServices] CloudProvider cloudProvider)
+        {
+            Guid? parrentId = string.IsNullOrEmpty(parrentName) ? null : Guid.Parse(parrentName);
+
+            var result = await cloudProvider.ViewCloudFilesAsync(parrentId, fileName, context.User);
+            if (result.Success)
+            {
+                return Results.File(result.Value.FileStream, result.Value.ContentType);
+            }
+            else 
+                return Results.BadRequest(result.ErrorMessage);
+        }
+        private static async Task<IResult> ViewFile(HttpContext context, string fileName, [FromServices] CloudProvider cloudProvider)
+        {
+            var result = await cloudProvider.ViewCloudFilesAsync(null, fileName, context.User);
+            if (result.Success)
+            {
+                return Results.File(result.Value.FileStream, result.Value.ContentType);
+            }
+            else
+                return Results.BadRequest(result.ErrorMessage);
         }
     }
 }

@@ -50,7 +50,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IFileListService, FileListService>();
-builder.Services.Configure<FileUploadSettings>(builder.Configuration.GetSection(nameof(FileUploadSettings)));
+builder.Services.Configure<FileUploadSettings>(builder.Configuration.GetSection(nameof(FileUploadSettings))); 
+builder.Services.Configure<CloudSettings>(builder.Configuration.GetSection(nameof(CloudSettings)));
 builder.Services.AddScoped<FileHelper>();
 
 builder.Services.AddScoped<ICloudNavigator, CloudServerNavigator>();

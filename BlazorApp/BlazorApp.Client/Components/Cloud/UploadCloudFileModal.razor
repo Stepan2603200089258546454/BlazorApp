@@ -1,4 +1,5 @@
-﻿@using BlazorApp.Client.Services.Cloud
+﻿@using BlazorApp.Client.Models.Cloud
+@using BlazorApp.Client.Services.Cloud
 @using FileExstend
 @implements IAsyncDisposable
 
@@ -105,6 +106,31 @@
                             </table>
                         </div>
                     }
+                    if (UploadFileResults?.Count() > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover caption-top">
+                                <caption>Результат загрузки файлов (@UploadFileResults.Count())</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Результат</th>
+                                        <th scope="col">Название</th>
+                                        <th scope="col">Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                    @foreach (var file in UploadFileResults)
+                                    {
+                                        <tr>
+                                            <td>@file.Success</td>
+                                            <td>@file.FileName</td>
+                                            <td>@file.Message</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                 }
             </div>
             <div class="modal-footer">
@@ -126,7 +152,7 @@
     [Parameter, EditorRequired]
     public Guid? ParrentId { get; set; }
     [Parameter]
-    public EventCallback OnSendFiles { get; set; }
+    public EventCallback<bool> OnSendFiles { get; set; }
 
     [Inject] private ICloudNavigator _cloudNavigator { get; set; }
 
@@ -136,6 +162,7 @@
 
     private bool isLoading { get; set; } = false;
     public List<IBrowserFile> SelectedFiles { get; private set; } = [];
+    public IEnumerable<UploadFileResult>? UploadFileResults { get; private set; }
     public List<ErrorFilesViewModel> ErrorFiles { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
     public FileUploadSettings Settings { get; private set; }
@@ -186,6 +213,9 @@
         {
             SelectedFiles.AddRange(e.GetMultipleFiles(e.FileCount));
         }
+        ErrorFiles.Clear();
+        ErrorMessage = null;
+        UploadFileResults = null;
         isLoading = false;
     }
 
@@ -200,17 +230,19 @@
         isLoading = true;
         StateHasChanged();
         var result = await _cloudNavigator.CreateCloudFilesAsync(CloudId.Value, ParrentId, SelectedFiles, PageLifetimeToken);
+        UploadFileResults = result.Value;
         ErrorMessage = result.ErrorMessage;
         SelectedFiles.Clear();
         isLoading = false;
         StateHasChanged();
-        await OnSendFiles.InvokeAsync();
+        await OnSendFiles.InvokeAsync(UploadFileResults?.Count() > 0);
     }
     private void ClearSelected()
     {
         SelectedFiles.Clear();
         ErrorFiles.Clear();
         ErrorMessage = null;
+        UploadFileResults = null;
     }
 
     // Флаг для отслеживания состояния

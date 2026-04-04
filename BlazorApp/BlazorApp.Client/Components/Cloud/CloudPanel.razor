@@ -1,6 +1,7 @@
 ﻿@using BlazorApp.Client.Models.Cloud
 @using BlazorApp.Client.Services.Cloud
 @using System.Threading.Tasks
+@implements IAsyncDisposable
 
 
 <CreateCloudModalDialog NameModal="CreateCloudModal" OnCreate="CreateCloud" />
@@ -8,8 +9,9 @@
 
 @if (string.IsNullOrEmpty(Message) == false)
 {
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
         @Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
     </div>
 }
 
@@ -307,5 +309,24 @@
         await ClearSelectedCloudOpened();
         isLoading = false;
         StateHasChanged();
+    }
+
+    // Флаг для отслеживания состояния
+    private bool _isDisposed;
+    // Освобождение ресурсов при уничтожении компонента
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
+        // Отменяем все операции
+        _pageLifetimeCts?.Cancel();
+        // Освобождаем ресурсы
+        _pageLifetimeCts?.Dispose();
+
+        Message = string.Empty;
+        Clouds = null;
+        SelectedCloudEdit = null;
     }
 }

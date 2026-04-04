@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="h-100 translated-ltr">
 
 <head>
     <meta charset="utf-8" />
@@ -14,7 +14,7 @@
     <HeadOutlet />
 </head>
 
-<body>
+<body class="d-flex flex-column h-100">
     <Routes />
     <ReconnectModal />
     @* <script>
@@ -22,8 +22,8 @@
         window.MONO_OPTIONS = '--mscorlib=/_framework/mscorlib.dll --max-heap-size=2048m';
         // Или для больших объемов: '--max-heap-size=4096m' (4GB)
     </script> *@
-    <script src="@Assets["lib/bootstrap/dist/js/bootstrap.bundle.min.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["lib/bootstrap/dist/js/bootstrap.bundle.min.js"]"></script>
     <script src="@Assets["Pages/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
 </body>
 

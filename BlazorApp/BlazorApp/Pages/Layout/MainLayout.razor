@@ -1,21 +1,26 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<header>
+    <NavMenu />
+</header>
+
+<main role="main" class="flex-shrink-0">
+    <div class="container">
+        @Body
     </div>
+</main>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="/openapi/v1.json" target="_blank">OpenAPI</a>
-            <a href="/scalar/v1" target="_blank">Scalar</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<footer class="footer mt-auto py-3 bg-body-tertiary">
+    <div class="container">
+        <span class="text-body-secondary">
+            <font dir="auto" style="vertical-align: inherit;">
+                <font dir="auto" style="vertical-align: inherit;">
+                    v 0.5
+                </font>
+            </font>
+        </span>
+    </div>
+</footer>
 
 <div id="blazor-error-ui" data-nosnippet>
     Произошла необработанная ошибка.

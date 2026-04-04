@@ -1,0 +1,71 @@
+{
+  "1498351034": {
+    "User": {
+      "Id": 1498351034,
+      "IsBot": false,
+      "FirstName": null,
+      "LastName": null,
+      "Username": "SBulychev",
+      "LanguageCode": null,
+      "IsPremium": false,
+      "AddedToAttachmentMenu": false,
+      "CanJoinGroups": false,
+      "CanReadAllGroupMessages": false,
+      "SupportsInlineQueries": false,
+      "CanConnectToBusiness": false,
+      "HasMainWebApp": false,
+      "HasTopicsEnabled": false,
+      "AllowsUsersToCreateTopics": false
+    },
+    "Adress": "ул. Молодежная, д. 18",
+    "State": 0,
+    "Request": null,
+    "Response": null
+  },
+  "546963278": {
+    "User": {
+      "Id": 546963278,
+      "IsBot": false,
+      "FirstName": null,
+      "LastName": null,
+      "Username": "ann_valy",
+      "LanguageCode": null,
+      "IsPremium": false,
+      "AddedToAttachmentMenu": false,
+      "CanJoinGroups": false,
+      "CanReadAllGroupMessages": false,
+      "SupportsInlineQueries": false,
+      "CanConnectToBusiness": false,
+      "HasMainWebApp": false,
+      "HasTopicsEnabled": false,
+      "AllowsUsersToCreateTopics": false
+    },
+    "Adress": "ул. Молодежная, д. 18",
+    "State": 0,
+    "Request": null,
+    "Response": null
+  },
+  "280960484": {
+    "User": {
+      "Id": 280960484,
+      "IsBot": false,
+      "FirstName": "Roman",
+      "LastName": "Mironov",
+      "Username": null,
+      "LanguageCode": "ru",
+      "IsPremium": true,
+      "AddedToAttachmentMenu": false,
+      "CanJoinGroups": false,
+      "CanReadAllGroupMessages": false,
+      "SupportsInlineQueries": false,
+      "CanConnectToBusiness": false,
+      "HasMainWebApp": false,
+      "HasTopicsEnabled": false,
+      "AllowsUsersToCreateTopics": false
+    },
+    "Adress": "ул. Молодежная, д. 18",
+    "State": 0,
+    "Request": null,
+    "Response": null
+  }
+}

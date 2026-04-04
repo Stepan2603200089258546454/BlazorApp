@@ -15,11 +15,14 @@ namespace BlazorApp.API
 
             endpoints.MapPost("cloud/file/dowload", PostDownload)
                 .RequireAuthorization();
-            endpoints.MapGet(CloudProvider.MainFolder + "/{parrentName}/{fileName}", ViewFileFromParrent)
+            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{parrentName}/{fileName}", ViewFileFromParrent)
                 .RequireAuthorization();
-            endpoints.MapGet(CloudProvider.MainFolder + "/{fileName}", ViewFile)
+            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{fileName}", ViewFile)
                 .RequireAuthorization();
-            //endpoints.MapGet(CloudProvider.MainFolder + "/{*fileName}", Results.NotFound);
+            endpoints.MapGet(CloudProvider.MainFolder + "/{*path}", (string path) =>
+            {
+                return Results.NotFound();
+            });
 
             return endpoints;
         }

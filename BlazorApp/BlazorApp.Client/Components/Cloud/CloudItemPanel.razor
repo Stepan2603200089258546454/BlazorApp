@@ -1,6 +1,7 @@
 ﻿@using BlazorApp.Client.Models
 @using BlazorApp.Client.Models.Cloud
 @using BlazorApp.Client.Services.Cloud
+@implements IAsyncDisposable
 
 <CreateCloudFolderModal NameModal="CreateCloudFolder" OnCreate="CreateFolder" />
 <EditCloudItemModal NameModal="EditFolderModal" CloudId="EditItemModel" OnEdit="UpdateItem" OnClose="() => EditItemModel = null" />
@@ -91,7 +92,7 @@ else
         {
             <div class="card-header">
                 <div class="row">
-                    <div class="col d-flex align-items-center">
+                    <div class="col d-flex align-items-center" style="word-break: break-all; white-space: normal;">
                         Выбранный элемент: @SelectItem?.DisplayName
                     </div>
                     <div class="col-auto d-flex align-items-center">
@@ -531,5 +532,26 @@ else
     private async Task ErrorMessage(string error)
     {
         await OnErrorMessage.InvokeAsync(error);
+    }
+
+    // Флаг для отслеживания состояния
+    private bool _isDisposed;
+    // Освобождение ресурсов при уничтожении компонента
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
+        // Отменяем все операции
+        _pageLifetimeCts?.Cancel();
+        // Освобождаем ресурсы
+        _pageLifetimeCts?.Dispose();
+
+        OpenFolder = null;
+        SelectItem = null;
+        Clouds = null;
+        NavigationHistory.Clear();
+        EditItemModel = null;
     }
 }

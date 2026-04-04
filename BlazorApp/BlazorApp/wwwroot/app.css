@@ -6,6 +6,30 @@ a, .btn-link {
     color: #006bb7;
 }
 
+/*Оформление ручное*/
+
+main > .container {
+    padding: 80px 15px 0;
+}
+.navbar .nav-link {
+    font-size: 1.1rem;
+}
+.dropdown-item-danger {
+    color: var(--bs-red);
+}
+
+    .dropdown-item-danger:hover,
+    .dropdown-item-danger:focus {
+        color: #fff;
+        background-color: var(--bs-red);
+    }
+
+    .dropdown-item-danger.active {
+        background-color: var(--bs-red);
+    }
+
+/*Оформление ручное*/
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;

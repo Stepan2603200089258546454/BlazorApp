@@ -232,7 +232,7 @@ namespace BlazorApp.Services.Cloud
                 ApplicationUser appUser = await _userManager.GetUserAsync(user)
                     ?? throw new Exception("User not found");
 
-                using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+                await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
                 List<CloudItem> cloudItems = await context.CloudItems
                     .AsNoTracking()
@@ -266,6 +266,7 @@ namespace BlazorApp.Services.Cloud
                         }
                     }
                 }
+
                 return Result<IEnumerable<CloudItemModel>>.OnSuccess(cloudItems.Select(x => new CloudItemModel()
                 {
                     Id = x.Id,

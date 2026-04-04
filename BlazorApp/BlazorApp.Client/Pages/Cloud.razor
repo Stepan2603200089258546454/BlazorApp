@@ -6,6 +6,8 @@
 @implements IAsyncDisposable
 @rendermode pageRenderMode
 
+<PageTitle>Диск</PageTitle>
+
 <h3>Cloud [@InteractiveInfo.CurrentRenderType]</h3>
 
 @if (InteractiveInfo.IsWaitingInteractive == false)
@@ -31,8 +33,6 @@ else
     public CancellationToken PageLifetimeToken => _pageLifetimeCts.Token;
 
     private InteractiveInfoService InteractiveInfo { get; set; }
-
-    // [Inject] private ICloudNavigator _cloudNavigator { get; set; }
 
     private CloudModel? SelectedCloud { get; set; }
 

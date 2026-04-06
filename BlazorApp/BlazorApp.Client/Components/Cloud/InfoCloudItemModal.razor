@@ -13,6 +13,10 @@
                     <p>Отображаемое имя: @Model.DisplayName</p>
                     <p>Системное имя: @Model.SystemName</p>
                     <p>Описание: @Model.Description</p>
+                    @if (Model.Size.HasValue)
+                    {
+                        <p>Размер: @FileExstensionHelper.FormatBytes(Model.Size.Value)</p>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

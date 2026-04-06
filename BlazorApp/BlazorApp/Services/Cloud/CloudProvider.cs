@@ -267,6 +267,15 @@ namespace BlazorApp.Services.Cloud
                     }
                 }
 
+                var sizeMap = await context.CloudFileData
+                    .Where(x => cloudItems.Select(s => s.Id).Any(a => a == x.CloudItem.Id))
+                    .Select(x => new
+                    {
+                        x.CloudItem.Id,
+                        x.Size,
+                    })
+                    .ToListAsync();
+
                 return Result<IEnumerable<CloudItemModel>>.OnSuccess(cloudItems.Select(x => new CloudItemModel()
                 {
                     Id = x.Id,
@@ -274,6 +283,7 @@ namespace BlazorApp.Services.Cloud
                     SystemName = x.SystemName,
                     DisplayName = x.DisplayName,
                     Description = x.Description,
+                    Size = sizeMap.FirstOrDefault(s => s.Id == x.Id)?.Size,
                 }));
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
@@ -598,37 +608,6 @@ namespace BlazorApp.Services.Cloud
                 return Result<FileStreamContent>.OnError(ex);
             }
         }
-
-        //public async Task<Result<List<CloudSize>>> GetCloudSize(ClaimsPrincipal user, CancellationToken cancellationToken = default)
-        //{
-        //    try
-        //    {
-        //        ApplicationUser appUser = await _userManager.GetUserAsync(user)
-        //            ?? throw new Exception("User not found");
-
-        //        await using DBContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-
-        //        List<CloudSize> cloudSize = await context.CloudFileData
-        //            .Where(x => x.CloudItem.PersonalCloud.UserId == appUser.Id)
-        //            .GroupBy(x => x.CloudItem.PersonalCloud)
-        //            .Select(x => new CloudSize()
-        //            {
-        //                Cloud = x.Key,
-        //                Size = x.Sum(x => x.Size)
-        //            })
-        //            .ToListAsync();
-
-        //        return Result<List<CloudSize>>.OnSuccess(cloudSize);
-        //    }
-        //    catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
-        //    {
-        //        return Result<List<CloudSize>>.OnCanceled(ex);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Result<List<CloudSize>>.OnError(ex);
-        //    }
-        //}
 
         private static async Task<byte[]> GetFileBytes(IBrowserFile file)
         {

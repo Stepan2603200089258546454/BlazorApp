@@ -8,7 +8,7 @@ a, .btn-link {
 
 /*Оформление ручное*/
 
-main > .container {
+main > .container-xxl {
     padding: 80px 15px 0;
 }
 .navbar .nav-link {

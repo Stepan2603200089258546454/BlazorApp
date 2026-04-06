@@ -540,5 +540,10 @@ namespace FileExstend
                 _ => $"{bytes / (1024.0 * 1024 * 1024 * 1024 * 1024):F2} ПБ"
             };
         }
+        public static string FormatBytes(long? bytes)
+        {
+            if (bytes == null) return string.Empty;
+            else return FormatBytes(bytes.Value);
+        }
     }
 }

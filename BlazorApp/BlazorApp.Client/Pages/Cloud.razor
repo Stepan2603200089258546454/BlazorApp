@@ -8,12 +8,25 @@
 
 <PageTitle>Диск</PageTitle>
 
-<h3>Cloud [@InteractiveInfo.CurrentRenderType]</h3>
+<div class="row">
+    <div class="col">
+        <h3>Диск</h3>
+    </div>
+    <div class="col-auto">
+        <InteractiveInfoPanel InteractiveInfo="InteractiveInfo" />
+    </div>
+</div>
 
 @if (InteractiveInfo.IsWaitingInteractive == false)
 {
-    <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" />
-    <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" OnUploadCloudModel="StateHasChanged" />
+    <div class="row">
+        <div class="col-lg-5">
+            <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" />
+        </div>
+        <div class="col-lg-7">
+            <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" OnUploadCloudModel="StateHasChanged" />
+        </div>
+    </div>
 }
 else
 {
@@ -38,7 +51,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        InteractiveInfo = new InteractiveInfoService(RendererInfo, AssignedRenderMode);
+        InteractiveInfo ??= new InteractiveInfoService(RendererInfo, AssignedRenderMode);
         await base.OnInitializedAsync();
     }
 

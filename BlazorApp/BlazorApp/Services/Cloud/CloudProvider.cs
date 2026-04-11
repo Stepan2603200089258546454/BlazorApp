@@ -419,24 +419,24 @@ namespace BlazorApp.Services.Cloud
 
                 // отсекаем что не подходит по настройкам
 
-                IEnumerable<IBrowserFile> errorFilesSize = files.Where(x => settings.EnableMaxFileSize ? x.Size >= settings.MaxFileSize : false);
-                results.AddRange(errorFilesSize.Select(x => new UploadFileResult()
+                IEnumerable<IBrowserFile> errorFiles = files.Where(x => settings.EnableMaxFileSize ? x.Size >= settings.MaxFileSize : false);
+                results.AddRange(errorFiles.Select(x => new UploadFileResult()
                 {
                     Success = false,
                     FileName = x.Name,
                     Message = "Превышен размер загружаемого файла"
                 }));
-                foreach (var errorFile in errorFilesSize)
+                foreach (var errorFile in errorFiles)
                     files.Remove(errorFile);
 
-                var errorFilesCount = files.Skip(settings.EnableMaxAllowedFiles ? settings.MaxAllowedFiles : files.Count());
-                results.AddRange(errorFilesCount.Select(x => new UploadFileResult()
+                errorFiles = files.Skip(settings.EnableMaxAllowedFiles ? settings.MaxAllowedFiles : files.Count());
+                results.AddRange(errorFiles.Select(x => new UploadFileResult()
                 {
                     Success = false,
                     FileName = x.Name,
                     Message = "Превышено кол-во загружаемых файлов"
                 }));
-                foreach (var errorFile in errorFilesCount)
+                foreach (var errorFile in errorFiles)
                     files.Remove(errorFile);
 
                 if (files.Count() <= 0)
@@ -484,7 +484,7 @@ namespace BlazorApp.Services.Cloud
                     {
                         ParrentId = parrentId,
                         SystemName = trustedFileName,
-                        DisplayName = trustedFileName,
+                        DisplayName = file.Name,//trustedFileName,
                         PersonalCloudId = cloudId,
                         Description = file.Name,
                         FileData = new CloudFileData()

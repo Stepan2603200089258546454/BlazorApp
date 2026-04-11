@@ -48,14 +48,6 @@
     </div>
 </div>
 
-@if (string.IsNullOrEmpty(Message) == false)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @Message
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-}
-
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
@@ -216,9 +208,9 @@
     [Inject] private ICloudNavigator _cloudNavigator { get; set; }
 
     [Parameter] public EventCallback<CloudModel?> OnCloudSelected { get; set; }
+    [Parameter] public EventCallback<string> OnErrorMessage { get; set; }
 
     private bool isLoading { get; set; } = false;
-    private string Message { get; set; } = string.Empty;
 
     private IEnumerable<CloudModel>? Clouds { get; set; }
     private CloudSettings Settings { get; set; }
@@ -253,7 +245,7 @@
         if (result.Success)
             Clouds = result.Value;
         else
-            Message = result.ErrorMessage;
+            await OnErrorMessage.InvokeAsync(result.ErrorMessage);
         isLoading = false;
         StateHasChanged();
     }
@@ -269,11 +261,11 @@
             if (result.Success)
                 Clouds = result.Value;
             else
-                Message = result.ErrorMessage;
+                await OnErrorMessage.InvokeAsync(result.ErrorMessage);
         }
         else
         {
-            Message = createResult.ErrorMessage;
+            await OnErrorMessage.InvokeAsync(createResult.ErrorMessage);
         }
         isLoading = false;
         StateHasChanged();
@@ -306,11 +298,11 @@
             if (result.Success)
                 Clouds = result.Value;
             else
-                Message = result.ErrorMessage;
+                await OnErrorMessage.InvokeAsync(result.ErrorMessage);
         }
         else
         {
-            Message = editResult.ErrorMessage;
+            await OnErrorMessage.InvokeAsync(editResult.ErrorMessage);
         }
         SelectedCloudEdit = null;
         isLoading = false;
@@ -327,11 +319,11 @@
             if (result.Success)
                 Clouds = result.Value;
             else
-                Message = result.ErrorMessage;
+                await OnErrorMessage.InvokeAsync(result.ErrorMessage);
         }
         else
         {
-            Message = deleteResult.ErrorMessage;
+            await OnErrorMessage.InvokeAsync(deleteResult.ErrorMessage);
         }
         SelectedCloudEdit = null;
         await ClearSelectedCloudOpened();
@@ -349,11 +341,11 @@
             if (result.Success)
                 Clouds = result.Value;
             else
-                Message = result.ErrorMessage;
+                await OnErrorMessage.InvokeAsync(result.ErrorMessage);
         }
         else
         {
-            Message = deleteResult.ErrorMessage;
+            await OnErrorMessage.InvokeAsync(deleteResult.ErrorMessage);
         }
         SelectedCloudEdit = null;
         await ClearSelectedCloudOpened();
@@ -375,7 +367,6 @@
         // Освобождаем ресурсы
         _pageLifetimeCts?.Dispose();
 
-        Message = string.Empty;
         Clouds = null;
         SelectedCloudEdit = null;
     }

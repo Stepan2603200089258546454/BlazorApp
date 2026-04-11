@@ -57,6 +57,16 @@
                             Не передан файл
                         </div>
                     }
+
+                    <ul class="list-group mt-3">
+                        <li class="list-group-item">Отображаемое имя: @Model.DisplayName</li>
+                        <li class="list-group-item">Системное имя: @Model.SystemName</li>
+                        <li class="list-group-item">Описание: @Model.Description</li>
+                        @if (Model.Size.HasValue)
+                        {
+                            <li class="list-group-item">Размер: @FileExstensionHelper.FormatBytes(Model.Size.Value)</li>
+                        }
+                    </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

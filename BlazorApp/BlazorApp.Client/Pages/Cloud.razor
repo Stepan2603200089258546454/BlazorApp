@@ -19,12 +19,19 @@
 
 @if (InteractiveInfo.IsWaitingInteractive == false)
 {
+    @if (string.IsNullOrEmpty(ErrorMessage) == false)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть" @onclick="() => ErrorMessage = null"></button>
+        </div>
+    }
     <div class="row">
         <div class="col-lg-5">
-            <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" />
+            <CloudPanel SelectedCloud="SelectedCloud" OnCloudSelected="SelectedCloudOpened" OnErrorMessage="(mes) => ErrorMessage = mes" />
         </div>
         <div class="col-lg-7">
-            <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" OnUploadCloudModel="StateHasChanged" />
+            <CloudItemPanel Cloud="SelectedCloud" OnCloseCloud="ClearSelectedCloudOpened" OnUploadCloudModel="StateHasChanged" OnErrorMessage="(mes) => ErrorMessage = mes" />
         </div>
     </div>
 }
@@ -48,6 +55,7 @@ else
     private InteractiveInfoService InteractiveInfo { get; set; }
 
     private CloudModel? SelectedCloud { get; set; }
+    private string? ErrorMessage { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

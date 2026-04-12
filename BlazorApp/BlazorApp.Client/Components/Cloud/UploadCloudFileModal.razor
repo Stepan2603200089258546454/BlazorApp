@@ -152,6 +152,8 @@
     public Guid? CloudId { get; set; }
     [Parameter, EditorRequired]
     public Guid? ParrentId { get; set; }
+    [Parameter, EditorRequired]
+    public bool IsPersonal { get; set; }
     [Parameter]
     public EventCallback<bool> OnSendFiles { get; set; }
 
@@ -230,7 +232,7 @@
         }
         isLoading = true;
         StateHasChanged();
-        var result = await _cloudNavigator.CreateCloudFilesAsync(CloudId.Value, ParrentId, SelectedFiles, PageLifetimeToken);
+        var result = await _cloudNavigator.CreateCloudFilesAsync(CloudId.Value, ParrentId, SelectedFiles, IsPersonal, PageLifetimeToken);
         UploadFileResults = result.Value;
         ErrorMessage = result.ErrorMessage;
         SelectedFiles.Clear();

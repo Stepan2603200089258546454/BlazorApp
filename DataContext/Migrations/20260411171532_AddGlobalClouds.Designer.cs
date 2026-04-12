@@ -3,6 +3,7 @@ using System;
 using DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataContext.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20260411171532_AddGlobalClouds")]
+    partial class AddGlobalClouds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,10 +175,6 @@ namespace DataContext.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("FileDataId")
@@ -186,8 +185,6 @@ namespace DataContext.Migrations
                     b.HasIndex("ParrentId");
 
                     b.HasIndex("PersonalCloudId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("CloudItems");
                 });
@@ -435,12 +432,6 @@ namespace DataContext.Migrations
                         .WithMany("Items")
                         .HasForeignKey("PersonalCloudId");
 
-                    b.HasOne("DataContext.Models.ApplicationUser", "User")
-                        .WithMany("CloudItems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("FileData");
 
                     b.Navigation("GlobalCloud");
@@ -448,8 +439,6 @@ namespace DataContext.Migrations
                     b.Navigation("Parrent");
 
                     b.Navigation("PersonalCloud");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataContext.Models.Cloud.GlobalCloud", b =>
@@ -587,8 +576,6 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("CloudItems");
-
                     b.Navigation("GlobalClouds");
 
                     b.Navigation("PersonalClouds");

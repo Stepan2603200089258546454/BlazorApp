@@ -12,10 +12,19 @@
         public string SystemName { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
+        
         public Guid? ParrentId { get; set; }
         public CloudItem? Parrent { get; set; }
-        public Guid PersonalCloudId { get; set; }
-        public PersonalCloud PersonalCloud { get; set; }
+        
+        public Guid? PersonalCloudId { get; set; }
+        public PersonalCloud? PersonalCloud { get; set; }
+
+        public Guid? GlobalCloudId { get; set; }
+        public GlobalCloud? GlobalCloud{ get; set; }
+
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
         public Guid? FileDataId { get; set; }
         public CloudFileData? FileData { get; set; }
         public List<CloudItem> Children { get; set; } = [];

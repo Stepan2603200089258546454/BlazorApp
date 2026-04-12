@@ -8,6 +8,7 @@
         }
 
         public Guid Id { get; set; }
+        public string UserEmail { get; set; }
         public string SystemName { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }

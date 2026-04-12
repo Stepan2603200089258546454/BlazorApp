@@ -1,12 +1,8 @@
 ﻿@using BlazorApp.Client.Models
 @using BlazorApp.Client.Models.Cloud
 @using BlazorApp.Client.Services.Cloud
+@using System.Security.Claims
 @implements IAsyncDisposable
-
-<CreateCloudFolderModal NameModal="CreateCloudFolder" OnCreate="CreateFolder" />
-<EditCloudItemModal NameModal="EditFolderModal" CloudId="EditItemModel" OnEdit="UpdateItem" OnClose="() => EditItemModel = null" />
-<UploadCloudFileModal NameModal="AddCloudFiles" CloudId="Cloud?.Id" ParrentId="OpenFolder?.Id" OnSendFiles="LoadItemPageAsync" />
-<ViewCloudItemModal NameModal="ViewFile" Model="SelectItem" CloudId="Cloud?.Id" ParrentId="OpenFolder?.Id" />
 
 @if (Cloud == null)
 {
@@ -14,6 +10,11 @@
 }
 else
 {
+    <CreateCloudFolderModal NameModal="CreateCloudFolder" OnCreate="CreateFolder" />
+    <EditCloudItemModal NameModal="EditFolderModal" CloudId="EditItemModel" OnEdit="UpdateItem" OnClose="() => EditItemModel = null" />
+    <UploadCloudFileModal NameModal="AddCloudFiles" CloudId="Cloud!.Id" ParrentId="OpenFolder?.Id" IsPersonal="Cloud!.IsPersonal" OnSendFiles="LoadItemPageAsync" />
+    <ViewCloudItemModal NameModal="ViewFile" Model="SelectItem" CloudId="Cloud?.Id" ParrentId="OpenFolder?.Id" />
+
     <div class="card mb-3">
         <div class="card-header">
             <div class="row">
@@ -119,8 +120,8 @@ else
                         <ul class="dropdown-menu">
                             <li>
                                 <button class="dropdown-item"
-                                        disabled="@(SelectItem?.Type != CloudItemModel.ItemType.Folder && OpenFolder != SelectItem)"
-                                        @onclick="async () => await OpenedFolder(SelectItem)">
+                                        @onclick="async () => await OpenedFolder(SelectItem)"
+                                        disabled="@(SelectItem?.Type != CloudItemModel.ItemType.Folder && OpenFolder != SelectItem)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
                                         <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z" />
                                     </svg>
@@ -141,8 +142,8 @@ else
                             <li>
                                 <button class="dropdown-item"
                                         data-bs-toggle="modal" data-bs-target="#EditFolderModal"
-                                        disabled="@(SelectItem == null)"
-                                        @onclick="() => EditItemModel = SelectItem">
+                                        @onclick="() => EditItemModel = SelectItem"
+                                        disabled="@(SelectItem == null || (string.Equals(UserEmail, SelectItem.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false && string.Equals(UserEmail, Cloud!.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false))">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                         <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                         <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
@@ -153,8 +154,8 @@ else
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <button class="dropdown-item"
-                                        disabled="@(SelectItem == null)"
-                                        @onclick="() => SelectItem = null">
+                                        @onclick="() => SelectItem = null"
+                                        disabled="@(SelectItem == null)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                                         <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
                                     </svg>
@@ -164,8 +165,8 @@ else
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <button class="dropdown-item dropdown-item-danger"
-                                        disabled="@(SelectItem == null)"
-                                        @onclick="() => DeleteItem(SelectItem)">
+                                        @onclick="() => DeleteItem(SelectItem)"
+                                        disabled="@(SelectItem == null || (string.Equals(UserEmail, SelectItem.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false && string.Equals(UserEmail, Cloud!.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false))">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                                         <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
                                     </svg>
@@ -196,6 +197,10 @@ else
                         <thead>
                             <tr>
                                 <th scope="col" style="width: 1px;"></th>
+                                @if (Cloud?.IsPersonal == false)
+                                {
+                                    <th scope="col">Владелец</th>
+                                }
                                 <th scope="col">Название</th>
                                 <th scope="col">Размер</th>
                                 <th scope="col" style="width: 1px;"></th>
@@ -221,6 +226,12 @@ else
                                             </svg>
                                         }
                                     </td>
+                                    @if (Cloud?.IsPersonal == false)
+                                    {
+                                        <td class="align-middle" style="word-break: break-all; white-space: normal;">
+                                            @item.UserEmail
+                                        </td>
+                                    }
                                     <td class="align-middle" style="word-break: break-all; white-space: normal;">
                                         @item.DisplayName
                                     </td>
@@ -240,8 +251,8 @@ else
                                             <ul class="dropdown-menu">
                                                 <li>
                                                     <button class="dropdown-item"
-                                                            disabled="@(item.Type != CloudItemModel.ItemType.Folder)"
-                                                            @onclick="async () => await OpenedFolder(item)">
+                                                            @onclick="async () => await OpenedFolder(item)"
+                                                            disabled="@(item.Type != CloudItemModel.ItemType.Folder)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
                                                             <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14V3.5zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5V6zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7H1.633z" />
                                                         </svg>
@@ -251,8 +262,8 @@ else
                                                 <li>
                                                     <button class="dropdown-item"
                                                             data-bs-toggle="modal" data-bs-target="#ViewFile"
-                                                            disabled="@(item.Type != CloudItemModel.ItemType.File)"
-                                                            @onclick="() => SelectItem = item">
+                                                            @onclick="() => SelectItem = item"
+                                                            disabled="@(item.Type != CloudItemModel.ItemType.File)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z" />
                                                             <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z" />
@@ -263,7 +274,8 @@ else
                                                 <li>
                                                     <button class="dropdown-item"
                                                             data-bs-toggle="modal" data-bs-target="#EditFolderModal"
-                                                            @onclick="() => EditItemModel = item">
+                                                            @onclick="() => EditItemModel = item"
+                                                            disabled="@(string.Equals(UserEmail, item.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false && string.Equals(UserEmail, Cloud!.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
@@ -273,7 +285,9 @@ else
                                                 </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
-                                                    <button class="dropdown-item dropdown-item-danger" @onclick="async () => await DeleteItem(item)">
+                                                    <button class="dropdown-item dropdown-item-danger"
+                                                            @onclick="async () => await DeleteItem(item)"
+                                                            disabled="@(string.Equals(UserEmail, item.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false && string.Equals(UserEmail, Cloud!.UserEmail, StringComparison.InvariantCultureIgnoreCase) == false)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                                                             <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
                                                         </svg>
@@ -303,7 +317,9 @@ else
     [Parameter] public EventCallback<CloudModel> OnUploadCloudModel { get; set; }
     [Parameter] public EventCallback<string> OnErrorMessage { get; set; }
     [Inject] private ICloudNavigator _cloudNavigator { get; set; }
+    [Inject] private AuthenticationStateProvider _authStateProvider { get; set; }
 
+    private string UserEmail { get; set; }
     private bool isLoading { get; set; } = false;
     private CloudItemModel? OpenFolder { get; set; }
     private CloudItemModel? SelectItem { get; set; }
@@ -319,15 +335,17 @@ else
     {
         if (Cloud != null)
         {
-            OpenFolder = null;
-            SelectItem = null;
-            NavigationHistory.Clear();
-            EditItemModel = null;
-            Clouds = null;
+            UserEmail = (await GetUserAsync()).Identity?.Name ?? string.Empty;
             await LoadItemPageAsync(false);
-
         }
         await base.OnParametersSetAsync();
+    }
+
+    private async Task<ClaimsPrincipal> GetUserAsync()
+    {
+        AuthenticationState authState = await _authStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal user = authState.User;
+        return user;
     }
 
     private async Task LoadItemPageAsync(bool uploadModel)
@@ -335,7 +353,7 @@ else
         isLoading = true;
         StateHasChanged();
         if (NavigationHistory.Contains(OpenFolder) == false) NavigationHistory.Add(OpenFolder);
-        var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+        var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
         if (result.Success)
         {
             Clouds = result.Value;
@@ -350,7 +368,7 @@ else
 
         if (uploadModel)
         {
-            var uplResult = await _cloudNavigator.GetPersonalCloudAsync(Cloud.Id, PageLifetimeToken);
+            var uplResult = await _cloudNavigator.GetUserCloudAsync(Cloud.Id, PageLifetimeToken);
             if (uplResult.Success)
             {
                 Cloud.Size = uplResult.Value.Size;
@@ -378,7 +396,7 @@ else
             StateHasChanged();
             if (NavigationHistory.Contains(OpenFolder) == false && OpenFolder.Type == CloudItemModel.ItemType.Folder)
                 NavigationHistory.Add(OpenFolder);
-            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
             if (result.Success)
             {
                 Clouds = result.Value;
@@ -396,10 +414,10 @@ else
     {
         isLoading = true;
         StateHasChanged();
-        var resultCreateFolder = await _cloudNavigator.CreateFolderAsync(Cloud.Id, OpenFolder?.Id, model, PageLifetimeToken);
+        var resultCreateFolder = await _cloudNavigator.CreateFolderAsync(Cloud.Id, OpenFolder?.Id, model, Cloud.IsPersonal, PageLifetimeToken);
         if (resultCreateFolder.Success)
         {
-            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
             if (result.Success)
             {
                 Clouds = result.Value;
@@ -423,7 +441,7 @@ else
         var resultCreateFolder = await _cloudNavigator.UpdateItemAsync(Cloud.Id, OpenFolder?.Id, model, PageLifetimeToken);
         if (resultCreateFolder.Success)
         {
-            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
             if (result.Success)
             {
                 Clouds = result.Value;
@@ -453,7 +471,7 @@ else
         {
             if (SelectItem == model) SelectItem = null;
 
-            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+            var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
             if (result.Success)
             {
                 Clouds = result.Value;
@@ -466,7 +484,7 @@ else
                 return;
             }
 
-            var uplResult = await _cloudNavigator.GetPersonalCloudAsync(Cloud.Id, PageLifetimeToken);
+            var uplResult = await _cloudNavigator.GetUserCloudAsync(Cloud.Id, PageLifetimeToken);
             if (uplResult.Success)
             {
                 Cloud.Size = uplResult.Value.Size;
@@ -506,7 +524,7 @@ else
                 StateHasChanged();
                 if (NavigationHistory.Contains(OpenFolder) == false)
                     NavigationHistory.Add(OpenFolder);
-                var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, PageLifetimeToken);
+                var result = await _cloudNavigator.GetCloudItemAsync(Cloud.Id, OpenFolder?.Id, Cloud.IsPersonal, PageLifetimeToken);
                 if (result.Success)
                 {
                     Clouds = result.Value;

@@ -10,6 +10,13 @@
     <InputText @bind-Value="Model.Description" type="text" class="form-control" id="Model.Description" placeholder="Описание диска" />
 </div>
 
+<div class="form-check mb-3">
+    <InputCheckbox @bind-Value="Model.IsPersonal" class="form-check-input" type="checkbox" id="Model.IsPersonal" />
+    <label class="form-check-label" for="Model.IsPersonal">
+        Персональный диск
+    </label>
+</div>
+
 @code {
     [Parameter, EditorRequired]
     public CreateCloudModel Model { get; set; }

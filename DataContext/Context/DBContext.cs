@@ -14,6 +14,7 @@ namespace DataContext.Context
     {
         public DbSet<FileEntity> Files { get; set; }
         public DbSet<PersonalCloud> PersonalClouds { get; set; }
+        public DbSet<GlobalCloud> GlobalClouds { get; set; }
         public DbSet<CloudItem> CloudItems { get; set; }
         public DbSet<CloudFileData> CloudFileData { get; set; }
 
@@ -26,6 +27,7 @@ namespace DataContext.Context
         {
             builder.ApplyConfiguration(new FileEntityConfiguration());
             builder.ApplyConfiguration(new PersonalCloudConfiguration());
+            builder.ApplyConfiguration(new GlobalCloudConfiguration());
             builder.ApplyConfiguration(new CloudItemConfiguration());
             builder.ApplyConfiguration(new CloudFileDataConfiguration());
 

@@ -1,0 +1,80 @@
+﻿@using BlazorApp.Client.Models.Cloud
+@using System.Threading.Tasks
+
+<div class="modal fade" id="@(NameModal)" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="@(NameModal)Label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="@(NameModal)Label">Информация о диске</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                @if (Settings?.EnableMaxPersonalClouds == true)
+                {
+                    <p>Максимальное кол-во персональных поддисков: @Settings?.MaxPersonalClouds</p>
+                    <p>Созданно персональных поддисков: @Clouds?.Where(x => x.IsPersonal)?.Count()</p>
+                    <p>Доступно персональных поддисков: @(Settings?.MaxPersonalClouds - Clouds?.Where(x => x.IsPersonal)?.Count())</p>
+                }
+                else
+                {
+                    <p>Ограничение на максимальное кол-во персональных поддисков не используется</p>
+                    <p>Созданно персональных поддисков: @Clouds?.Where(x => x.IsPersonal)?.Count()</p>
+                }
+                @if (Settings?.EnableMaxPersonalCloudSize == true)
+                {
+                    <p>Максимальный размер персональных поддисков: @FileExstensionHelper.FormatBytes(Settings?.MaxPersonalCloudSize)</p>
+                    @if (Settings?.EnableMaxPersonalClouds == true)
+                    {
+                        <p>Всего доступно места персональных поддисков: @(FileExstensionHelper.FormatBytes(Settings?.MaxPersonalClouds * Settings?.MaxPersonalCloudSize))</p>
+                    }
+                    <p>Всего занято места персональных поддисков: @(FileExstensionHelper.FormatBytes(Clouds?.Where(x => x.IsPersonal)?.Sum(x => x.Size)))</p>
+                }
+                else
+                {
+                    <p>Ограничение на максимальный размер персональных поддисков не используется</p>
+                    <p>Всего занято места персональных поддисков: @(FileExstensionHelper.FormatBytes(Clouds?.Where(x => x.IsPersonal)?.Sum(x => x.Size)))</p>
+                }
+
+                @if (Settings?.EnableMaxGlobalClouds == true)
+                {
+                    <p>Максимальное кол-во глобальных поддисков: @Settings?.MaxGlobalClouds</p>
+                    <p>Созданно глобальных поддисков: @Clouds?.Where(x => x.IsPersonal == false)?.Count()</p>
+                    <p>Доступно глобальных поддисков: @(Settings?.MaxGlobalClouds - Clouds?.Where(x => x.IsPersonal == false)?.Count())</p>
+                }
+                else
+                {
+                    <p>Ограничение на максимальное кол-во глобальных поддисков не используется</p>
+                    <p>Созданно глобальных поддисков: @Clouds?.Where(x => x.IsPersonal == false)?.Count()</p>
+                }
+                @if (Settings?.EnableMaxGlobalCloudSize == true)
+                {
+                    <p>Максимальный размер глобальных поддисков: @FileExstensionHelper.FormatBytes(Settings?.MaxGlobalCloudSize)</p>
+                    @if (Settings?.EnableMaxPersonalClouds == true)
+                    {
+                        <p>Всего доступно места глобальных поддисков: @(FileExstensionHelper.FormatBytes(Settings?.MaxGlobalClouds * Settings?.MaxGlobalCloudSize))</p>
+                    }
+                    <p>Всего занято места глобальных поддисков: @(FileExstensionHelper.FormatBytes(Clouds?.Where(x => x.IsPersonal == false)?.Sum(x => x.Size)))</p>
+                }
+                else
+                {
+                    <p>Ограничение на максимальный размер глобальных поддисков не используется</p>
+                    <p>Всего занято места глобальных поддисков: @(FileExstensionHelper.FormatBytes(Clouds?.Where(x => x.IsPersonal == false)?.Sum(x => x.Size)))</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string NameModal { get; set; }
+    [Parameter, EditorRequired]
+    public CloudSettings Settings { get; set; }
+    [Parameter, EditorRequired]
+    public IEnumerable<CloudModel>? Clouds { get; set; }
+    [Parameter, EditorRequired]
+    public IEnumerable<CloudModel>? GlobalClouds { get; set; }
+}

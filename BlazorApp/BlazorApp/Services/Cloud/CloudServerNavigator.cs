@@ -19,7 +19,7 @@ namespace BlazorApp.Services.Cloud
         protected readonly AuthenticationStateProvider _authStateProvider;
 
         public CloudServerNavigator(
-            CloudProvider cloudProvider, 
+            CloudProvider cloudProvider,
             AuthenticationStateProvider authStateProvider)
         {
             _cloudProvider = cloudProvider;
@@ -37,17 +37,21 @@ namespace BlazorApp.Services.Cloud
         {
             return await _cloudProvider.GetMainPageAsync(await GetUserAsync(), cancellationToken);
         }
-        public async Task<Result<CloudModel>> GetPersonalCloudAsync(Guid cloudId, CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<CloudModel>>> GetGlobalPageAsync(CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.GetPersonalCloudAsync(cloudId, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.GetGlobalPageAsync(await GetUserAsync(), cancellationToken);
+        }
+        public async Task<Result<CloudModel>> GetUserCloudAsync(Guid cloudId, CancellationToken cancellationToken = default)
+        {
+            return await _cloudProvider.GetUserCloudAsync(cloudId, await GetUserAsync(), cancellationToken);
         }
         public async Task<Result> CreateCloudAsync(CreateCloudModel model, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.CreateCloudAsync(model.DisplayName, model.Description, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.CreateCloudAsync(model.DisplayName, model.Description, model.IsPersonal, await GetUserAsync(), cancellationToken);
         }
         public async Task<Result> UpdateCloudAsync(EditCloudModel model, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.UpdateCloudAsync(model.Id, model.DisplayName, model.Description, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.UpdateCloudAsync(model.Id, model.DisplayName, model.Description, model.IsPersonal, await GetUserAsync(), cancellationToken);
         }
         public async Task<Result> DeleteCloudAsync(Guid id, CancellationToken cancellationToken = default)
         {
@@ -63,13 +67,13 @@ namespace BlazorApp.Services.Cloud
         {
             return _cloudProvider.GetCloudSettings();
         }
-        public async Task<Result<IEnumerable<CloudItemModel>>> GetCloudItemAsync(Guid cloudId, Guid? parrentId, CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<CloudItemModel>>> GetCloudItemAsync(Guid cloudId, Guid? parrentId, bool isPersonal, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.GetCloudItemAsync(cloudId, parrentId, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.GetCloudItemAsync(cloudId, parrentId, isPersonal, await GetUserAsync(), cancellationToken);
         }
-        public async Task<Result> CreateFolderAsync(Guid cloudId, Guid? parrentId, CreateCloudFolderModel model, CancellationToken cancellationToken = default)
+        public async Task<Result> CreateFolderAsync(Guid cloudId, Guid? parrentId, CreateCloudFolderModel model, bool isPersonal, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.CreateFolderAsync(cloudId, parrentId, model.DisplayName, model.Description, await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.CreateFolderAsync(cloudId, parrentId, model.DisplayName, model.Description, isPersonal, await GetUserAsync(), cancellationToken);
         }
 
         public async Task<Result> UpdateItemAsync(Guid cloudId, Guid? parrentId, EditCloudItemModel model, CancellationToken cancellationToken = default)
@@ -81,9 +85,9 @@ namespace BlazorApp.Services.Cloud
             return await _cloudProvider.DeleteCloudItemAsync(cloudId, id, await GetUserAsync(), cancellationToken);
         }
 
-        public async Task<Result<IEnumerable<UploadFileResult>>> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, IEnumerable<IBrowserFile> files, CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<UploadFileResult>>> CreateCloudFilesAsync(Guid cloudId, Guid? parrentId, IEnumerable<IBrowserFile> files, bool isPersonal, CancellationToken cancellationToken = default)
         {
-            return await _cloudProvider.CreateCloudFilesAsync(cloudId, parrentId, files.ToList(), await GetUserAsync(), cancellationToken);
+            return await _cloudProvider.CreateCloudFilesAsync(cloudId, parrentId, files.ToList(), isPersonal, await GetUserAsync(), cancellationToken);
         }
     }
 }

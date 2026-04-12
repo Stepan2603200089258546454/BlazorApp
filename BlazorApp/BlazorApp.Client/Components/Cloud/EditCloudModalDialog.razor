@@ -47,15 +47,6 @@
 
     protected override void OnInitialized()
     {
-        // if (CloudId != null)
-        // {
-        //     Model = new EditCloudModel()
-        //     {
-        //         Id = CloudId.Id,
-        //         DisplayName = CloudId.DisplayName,
-        //         Description = CloudId.Description,
-        //     };
-        // }
         base.OnInitialized();
     }
     protected override void OnParametersSet()
@@ -67,7 +58,12 @@
                 Id = CloudId.Id,
                 DisplayName = CloudId.DisplayName,
                 Description = CloudId.Description,
+                IsPersonal = CloudId.IsPersonal,
             };
+        }
+        else
+        {
+            Model = null;
         }
         base.OnParametersSet();
     }

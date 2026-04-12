@@ -12,6 +12,7 @@ namespace DataContext.EntityConfiguration.Cloud
             builder.HasOne(x => x.PersonalCloud).WithMany(x => x.Items).HasForeignKey(x => x.PersonalCloudId);
             builder.HasOne(x => x.FileData).WithOne(x => x.CloudItem).HasForeignKey<CloudItem>(x => x.FileDataId).OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(c => c.Children).WithOne(c => c.Parrent).HasForeignKey(c => c.ParrentId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(x => x.User).WithMany(x => x.CloudItems).HasForeignKey(x => x.UserId);
         }
     }
 }

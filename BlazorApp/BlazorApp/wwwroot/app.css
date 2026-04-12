@@ -8,6 +8,9 @@ a, .btn-link {
 
 /*Оформление ручное*/
 
+main > .container-fluid {
+    padding: 80px 15px 0;
+}
 main > .container-xxl {
     padding: 80px 15px 0;
 }

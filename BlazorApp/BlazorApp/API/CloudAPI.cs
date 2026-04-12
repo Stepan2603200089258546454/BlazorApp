@@ -15,9 +15,9 @@ namespace BlazorApp.API
 
             endpoints.MapPost("cloud/file/dowload", PostDownload)
                 .RequireAuthorization();
-            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{parrentName}/{fileName}", ViewFileFromParrent)
+            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{cloud}/{parrentName}/{fileName}", ViewFileFromParrent)
                 .RequireAuthorization();
-            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{fileName}", ViewFile)
+            endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{cloud}/{fileName}", ViewFile)
                 .RequireAuthorization();
             endpoints.MapGet(CloudProvider.MainFolder + "/{*path}", (string path) =>
             {
@@ -39,11 +39,11 @@ namespace BlazorApp.API
             else
                 return TypedResults.BadRequest(result.ErrorMessage);
         }
-        private static async Task<IResult> ViewFileFromParrent(HttpContext context, string parrentName, string fileName, [FromServices] CloudProvider cloudProvider)
+        private static async Task<IResult> ViewFileFromParrent(HttpContext context, Guid cloud, string parrentName, string fileName, [FromServices] CloudProvider cloudProvider)
         {
             Guid? parrentId = string.IsNullOrEmpty(parrentName) ? null : Guid.Parse(parrentName);
 
-            var result = await cloudProvider.ViewCloudFilesAsync(parrentId, fileName, context.User);
+            var result = await cloudProvider.ViewCloudFilesAsync(cloud, parrentId, fileName, context.User);
             if (result.Success)
             {
                 return Results.File(result.Value.FileStream, result.Value.ContentType);
@@ -51,9 +51,9 @@ namespace BlazorApp.API
             else 
                 return Results.BadRequest(result.ErrorMessage);
         }
-        private static async Task<IResult> ViewFile(HttpContext context, string fileName, [FromServices] CloudProvider cloudProvider)
+        private static async Task<IResult> ViewFile(HttpContext context, Guid cloud, string fileName, [FromServices] CloudProvider cloudProvider)
         {
-            var result = await cloudProvider.ViewCloudFilesAsync(null, fileName, context.User);
+            var result = await cloudProvider.ViewCloudFilesAsync(cloud, null, fileName, context.User);
             if (result.Success)
             {
                 return Results.File(result.Value.FileStream, result.Value.ContentType);

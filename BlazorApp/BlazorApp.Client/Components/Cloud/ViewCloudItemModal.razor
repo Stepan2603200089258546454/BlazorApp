@@ -66,6 +66,7 @@
                         {
                             <li class="list-group-item">Размер: @FileExstensionHelper.FormatBytes(Model.Size.Value)</li>
                         }
+                        <li class="list-group-item">Владелец: @Model.UserEmail</li>
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -121,7 +122,7 @@
             if (Model?.Type == CloudItemModel.ItemType.File)
             {
                 string parrentPath = ParrentId != null ? ParrentId + "/" : string.Empty;
-                FilePath = $"v/Cloudes/{parrentPath}{Model.SystemName}";
+                FilePath = $"v/Cloudes/{CloudId}/{parrentPath}{Model.SystemName}";
                 if (string.IsNullOrEmpty(FilePath) == false)
                     FileEx = FileExstensionHelper.GetExtensionType(FilePath);
             }
@@ -141,7 +142,7 @@
             if (Model?.Type == CloudItemModel.ItemType.File)
             {
                 string parrentPath = ParrentId != null ? ParrentId + "/" : string.Empty;
-                FilePath = $"v/Cloudes/{parrentPath}{Model.SystemName}";
+                FilePath = $"v/Cloudes/{CloudId}/{parrentPath}{Model.SystemName}";
                 if (string.IsNullOrEmpty(FilePath) == false)
                     FileEx = FileExstensionHelper.GetExtensionType(FilePath);
             }

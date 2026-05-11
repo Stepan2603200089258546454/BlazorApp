@@ -19,10 +19,9 @@ namespace BlazorApp.API
                 .RequireAuthorization();
             endpoints.MapGet("v/" + CloudProvider.MainFolder + "/{cloud}/{fileName}", ViewFile)
                 .RequireAuthorization();
-            endpoints.MapGet(CloudProvider.MainFolder + "/{*path}", (string path) =>
-            {
-                return Results.NotFound();
-            });
+            endpoints.MapGet(CloudProvider.MainFolder + "/{*path}", (string path) => Results.NotFound)
+                // скрыть методы из OpenAPI
+                .ExcludeFromDescription();
 
             return endpoints;
         }

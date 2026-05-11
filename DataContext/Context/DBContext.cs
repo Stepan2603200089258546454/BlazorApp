@@ -12,7 +12,6 @@ namespace DataContext.Context
 {
     public class DBContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public DbSet<FileEntity> Files { get; set; }
         public DbSet<PersonalCloud> PersonalClouds { get; set; }
         public DbSet<GlobalCloud> GlobalClouds { get; set; }
         public DbSet<CloudItem> CloudItems { get; set; }
@@ -25,7 +24,6 @@ namespace DataContext.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.ApplyConfiguration(new FileEntityConfiguration());
             builder.ApplyConfiguration(new PersonalCloudConfiguration());
             builder.ApplyConfiguration(new GlobalCloudConfiguration());
             builder.ApplyConfiguration(new CloudItemConfiguration());

@@ -1012,6 +1012,7 @@ namespace BlazorApp.Services.Cloud
                             x.CloudItem.ParrentId == parrentId &&
                             (x.CloudItem.PersonalCloudId == cloudId || x.CloudItem.GlobalCloudId == cloudId))
                         .FirstOrDefaultAsync() ?? throw new Exception("Не найден файл");
+                    
                     await using (FileStream fs = new FileStream(filePath, FileMode.Create))
                     {
                         await fs.WriteAsync(data.Data, 0, data.Data.Length);

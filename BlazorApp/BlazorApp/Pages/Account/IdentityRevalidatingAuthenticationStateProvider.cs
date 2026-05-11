@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 
-namespace DataContext.Identity
+namespace BlazorApp.Pages.Account
 {
     /// <summary>
     /// Серверная проверка состояния пользователя

@@ -1,4 +1,3 @@
-using BlazorApp.Client.Interfaces;
 using BlazorApp.Client.Services;
 using BlazorApp.Client.Services.Cloud;
 using BlazorApp.Client.Settings;
@@ -15,9 +14,6 @@ builder.Services.AddScoped(sp =>
     {
         BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
     });
-
-builder.Services.AddTransient<IFileUploadService, FileUploadService>();
-builder.Services.AddScoped<IFileListService, FileListService>();
 
 builder.Services.AddTransient<ICloudNavigator, CloudClientNavigator>();
 

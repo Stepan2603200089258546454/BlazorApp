@@ -760,6 +760,7 @@ namespace BlazorApp.Services.Cloud
                     await context.CloudItems.AddRangeAsync(new CloudItem()
                     {
                         ParrentId = parrentId,
+                        UserId = appUser.Id,
                         SystemName = trustedFileName,
                         DisplayName = file.Name,//trustedFileName,
                         PersonalCloudId = cloudId,

@@ -313,6 +313,8 @@ else
 
 @code {
     [Parameter, EditorRequired] public CloudModel Cloud { get; set; }
+    private CloudModel? previousCloud; 
+
     [Parameter] public EventCallback OnCloseCloud { get; set; }
     [Parameter] public EventCallback<CloudModel> OnUploadCloudModel { get; set; }
     [Parameter] public EventCallback<string> OnErrorMessage { get; set; }
@@ -336,6 +338,14 @@ else
         if (Cloud != null)
         {
             UserEmail = (await GetUserAsync()).Identity?.Name ?? string.Empty;
+            previousCloud ??= Cloud;
+            // если изменился диск то нужно сбросить навигацию
+            if (Cloud != previousCloud)
+            {
+                NavigationHistory.Clear();
+                OpenFolder = null;
+                previousCloud = Cloud;
+            }
             await LoadItemPageAsync(false);
         }
         await base.OnParametersSetAsync();

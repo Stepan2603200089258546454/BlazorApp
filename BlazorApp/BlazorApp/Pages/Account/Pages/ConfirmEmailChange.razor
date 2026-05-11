@@ -9,9 +9,9 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email change</PageTitle>
+<PageTitle>Подтвердите изменение адреса электронной почты</PageTitle>
 
-<h1>Confirm email change</h1>
+<h1>Подтвердите изменение адреса электронной почты</h1>
 
 <StatusMessage Message="@message" />
 
@@ -35,14 +35,14 @@
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+                "Account/Login", "Ошибка: Неверная ссылка для подтверждения изменения адреса электронной почты.", HttpContext);
             return;
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            message = "Unable to find user with Id '{userId}'";
+            message = "Не удалось найти пользователя с идентификатором '{userId}'.";
             return;
         }
 
@@ -50,20 +50,20 @@
         var result = await UserManager.ChangeEmailAsync(user, Email, code);
         if (!result.Succeeded)
         {
-            message = "Error changing email.";
+            message = "Ошибка при изменении адреса электронной почты.";
             return;
         }
 
-        // In our UI email and user name are one and the same, so when we update the email
-        // we need to update the user name.
+        // В нашем пользовательском интерфейсе email и имя пользователя — это одно и то же, 
+        // поэтому при обновлении email нам необходимо обновить и имя пользователя.
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
         if (!setUserNameResult.Succeeded)
         {
-            message = "Error changing user name.";
+            message = "Ошибка при изменении имени пользователя.";
             return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        message = "Thank you for confirming your email change.";
+        message = "Спасибо за подтверждение изменения адреса электронной почты.";
     }
 }

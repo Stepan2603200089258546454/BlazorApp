@@ -106,7 +106,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets(); //mvc
 
-// Add additional endpoints required by the Identity /Account Razor components.
+// Добавьте дополнительные конечные точки, необходимые для компонентов Identity /Account Razor.
 app.MapAdditionalIdentityEndpoints();
 
 app.UsingAPIEndpoints();
